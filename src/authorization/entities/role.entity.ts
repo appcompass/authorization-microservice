@@ -1,25 +1,21 @@
-import { Transform } from 'class-transformer';
-import { Moment } from 'moment';
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
+  PrimaryGeneratedColumn
 } from 'typeorm';
 
-import { DateTransformer } from '../../db/transformers/date.transformer';
 import { Permission } from './permission.entity';
-import { RolePermission } from './role-permission.entity';
 import { UserRole } from './user-role.entity';
 
 @Entity('roles')
 export class Role {
   @PrimaryGeneratedColumn()
-  public id: number;
+  id: number;
 
   @Column({
     type: 'varchar',
@@ -27,29 +23,34 @@ export class Role {
     unique: true,
     nullable: false
   })
-  public name: string;
+  name: string;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
-  public label: string;
+  label: string;
 
   @Column({ type: 'text', nullable: false })
-  public description: string;
+  description: string;
 
   @ManyToOne(() => Permission, (permission) => permission.assignableRoles, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'assignable_by_id' })
-  public assignableBy: Permission;
+  assignableBy: Permission;
 
   @OneToMany(() => UserRole, (userRole) => userRole.role)
-  public roleToUsers: UserRole[];
+  roleToUsers: UserRole[];
 
-  @OneToMany(() => RolePermission, (rolePermission) => rolePermission.role)
-  public roleToPermissions: RolePermission[];
-
-  @Transform((created) => created?.format() || null)
-  @CreateDateColumn({ transformer: new DateTransformer() })
-  createdAt: Moment;
-
-  @Transform((updated) => updated?.format() || null)
-  @UpdateDateColumn({ transformer: new DateTransformer() })
-  updatedAt: Moment;
+  @ManyToMany(() => Permission, (permission) => permission.roles, {
+    cascade: true
+  })
+  @JoinTable({
+    name: 'role_permission',
+    joinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'permission_id',
+      referencedColumnName: 'id'
+    }
+  })
+  permissions: Permission[];
 }

@@ -1,9 +1,29 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { setUser } from 'src/db/query.utils';
+import { EntityManager, Transaction, TransactionManager } from 'typeorm';
+
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards
+} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
-import { CreateRolePayload } from '../dto/role-create.dto';
-import { SortListQuery } from '../dto/sort-list.dto';
+import { FilterListQuery } from '../dto/filter-list.dto';
+import { CreatePermissionPayload } from '../dto/permission-create.dto';
+import { UpdatePermissionPayload } from '../dto/permission-update.dto';
+import { Permission } from '../entities/permission.entity';
+import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { PermissionsService } from '../services/permissions.service';
 
 @Controller()
@@ -12,36 +32,75 @@ export class PermissionsController {
 
   @UseGuards(AuthGuard())
   @Post('permissions')
-  async create(@Body() payload: CreateRolePayload) {
-    return this.permissionsService.create(payload);
+  @Transaction()
+  async create(
+    @Body() payload: CreatePermissionPayload,
+    @Req() req: Request,
+    @TransactionManager() manager: EntityManager
+  ) {
+    await setUser(req.user, manager);
+    const { generatedMaps } = await this.permissionsService.create(manager, payload);
+    const [{ id }] = generatedMaps;
+
+    return { id };
   }
 
   @UseGuards(AuthGuard())
   @Get('permissions')
-  async list(@Query() query: SortListQuery) {
-    const { skip, take, order: orderStr } = query;
-    // TODO: pull this into the DTO (somehow)
-    const order = orderStr
-      .split(',')
-      .map((row) => row.split(':'))
-      .reduce((o, [k, v]) => ((o[k.trim().toLocaleLowerCase()] = (v || 'asc').trim().toUpperCase()), o), {});
+  @Transaction()
+  async list(@Query() query: FilterListQuery<Permission>, @TransactionManager() manager: EntityManager) {
+    const { skip, take, order } = query;
     const options = {
       skip: +skip,
       take: +take,
       order
     };
-
-    return this.permissionsService.findAll(options);
+    return this.permissionsService.findAll(manager, options);
   }
 
-  @MessagePattern('permissions.permission.find')
-  async findBy(@Payload() name: string) {
-    return await this.permissionsService.findByName(name);
+  @UseGuards(AuthGuard())
+  @Get('permissions/:id')
+  @Transaction()
+  async findById(@Param('id') id: number, @Res() res: Response, @TransactionManager() manager: EntityManager) {
+    const response = await this.permissionsService.findBy(manager, { id });
+    const statusCode = response ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+    res.status(statusCode).send(response);
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('permissions/:id')
+  @Transaction()
+  async updateById(
+    @Param('id') id: number,
+    @Body(new NoEmptyPayloadPipe()) payload: UpdatePermissionPayload,
+    @Req() req: Request,
+    @Res() res: Response,
+    @TransactionManager() manager: EntityManager
+  ) {
+    await setUser(req.user, manager);
+    const { affected } = await this.permissionsService.update(manager, id, payload);
+    const statusCode = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+    res.status(statusCode).send();
   }
 
   @UseGuards(AuthGuard())
   @Delete('permissions/:id')
-  async delete(@Param('id') id: number) {
-    return this.permissionsService.delete(id);
+  @Transaction()
+  async deleteById(
+    @Param('id') id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+    @TransactionManager() manager: EntityManager
+  ) {
+    await setUser(req.user, manager);
+    const { affected } = await this.permissionsService.delete(manager, id);
+    const status = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+    res.status(status).send();
+  }
+
+  @MessagePattern('permissions.permission.findByName')
+  @Transaction()
+  async findByName(@Payload() name: string, @TransactionManager() manager: EntityManager) {
+    return await this.permissionsService.findBy(manager, { name });
   }
 }

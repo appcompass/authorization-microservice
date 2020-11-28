@@ -17,3 +17,14 @@ export type AuthenticatedUser = {
   createdAt: string;
   updatedAt: string;
 };
+
+export enum AuditAuthAssignmentType {
+  assigned = 'ASSIGNED',
+  revoked = 'REVOKED'
+}
+
+export enum AuditDataChangeType {
+  created = 'CREATED',
+  updated = 'UPDATED',
+  deleted = 'DELETED'
+}

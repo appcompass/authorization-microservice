@@ -1,9 +1,11 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-import { RoleExists } from '../validators/role-exists.validator';
+import { PermissionExists } from '../validators/permission-exists.validator';
 
-export class CreateRolePayload {
-  @RoleExists(false)
+export class CreatePermissionPayload {
+  @PermissionExists(false)
+  @IsString()
+  @IsNotEmpty()
   readonly name: string;
 
   @IsString()

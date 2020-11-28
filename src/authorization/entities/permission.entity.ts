@@ -1,18 +1,5 @@
-import { Transform } from 'class-transformer';
-import { Moment } from 'moment';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { DateTransformer } from '../../db/transformers/date.transformer';
-import { RolePermission } from './role-permission.entity';
 import { Role } from './role.entity';
 import { UserPermission } from './user-permission.entity';
 
@@ -38,17 +25,12 @@ export class Permission {
   @Column({ type: 'boolean', default: false, nullable: false })
   public system: boolean;
 
-  @Transform((created) => created?.format() || null)
-  @CreateDateColumn({ transformer: new DateTransformer() })
-  createdAt: Moment;
-
-  @Transform((updated) => updated?.format() || null)
-  @UpdateDateColumn({ transformer: new DateTransformer() })
-  updatedAt: Moment;
-
   @ManyToOne(() => Permission, (permission) => permission.assignablePermissions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'assignable_by_id' })
   public assignableBy: Permission;
+
+  @ManyToMany(() => Role, (role) => role.permissions)
+  public roles: Role[];
 
   @OneToMany(() => Permission, (permission) => permission.assignableBy)
   public assignablePermissions: Permission[];
@@ -58,7 +40,4 @@ export class Permission {
 
   @OneToMany(() => UserPermission, (userPermission) => userPermission.permission)
   public permissionToUsers: UserPermission[];
-
-  @OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission)
-  public permissionToRoles: RolePermission[];
 }

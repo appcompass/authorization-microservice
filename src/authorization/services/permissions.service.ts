@@ -1,48 +1,40 @@
-import { Connection, FindManyOptions, Repository } from 'typeorm';
+import { EntityManager, FindConditions, FindManyOptions } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import { Permission } from '../entities/permission.entity';
 
 @Injectable()
 export class PermissionsService {
-  constructor(
-    private readonly connection: Connection,
-    @InjectRepository(Permission)
-    private readonly permissionRepository: Repository<Permission>
-  ) {}
-
-  async findAll(options?: FindManyOptions<Permission>): Promise<Permission[]> {
-    console.log(options);
-    return await this.permissionRepository.find(options);
+  async findAll(manager: EntityManager, options?: FindManyOptions<Permission>): Promise<Permission[]> {
+    return await manager.getRepository(Permission).find(options);
   }
 
-  async findByName(name: string): Promise<Permission | undefined> {
-    return await this.permissionRepository.findOne({ name });
+  async findBy(manager: EntityManager, filters: FindConditions<Permission>): Promise<Permission | undefined> {
+    return await manager.getRepository(Permission).findOne(filters);
   }
 
-  async save(data: Partial<Permission>) {
-    return await this.permissionRepository.save(data);
+  async create(manager: EntityManager, data: Partial<Permission>) {
+    return await manager.insert(Permission, data);
   }
 
-  async create(data: Partial<Permission>) {
-    return await this.connection.transaction(async (entityManager) => await entityManager.insert(Permission, data));
-  }
-
-  async update(id: number, data: Partial<Permission>) {
-    const { affected } = await this.connection.transaction(
-      async (entityManager) =>
-        await entityManager.createQueryBuilder().update(Permission).set(data).where('id = :id', { id }).execute()
-    );
+  async update(manager: EntityManager, id: number, data: Partial<Permission>) {
+    const { affected } = await manager
+      .createQueryBuilder()
+      .update(Permission)
+      .set(data)
+      .where('id = :id', { id })
+      .execute();
     return { affected };
   }
 
-  async delete(id: number) {
-    const { affected } = await this.connection.transaction(
-      async (entityManager) =>
-        await entityManager.createQueryBuilder().delete().from(Permission).where('id = :id', { id }).execute()
-    );
+  async delete(manager: EntityManager, id: number) {
+    const { affected } = await manager
+      .createQueryBuilder()
+      .delete()
+      .from(Permission)
+      .where('id = :id', { id })
+      .execute();
     return { affected };
   }
 }

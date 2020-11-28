@@ -1,9 +1,31 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { EntityManager, Transaction, TransactionManager } from 'typeorm';
+
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UnprocessableEntityException,
+  UseGuards
+} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
+import { setUser } from '../../db/query.utils';
+import { FilterListQuery } from '../dto/filter-list.dto';
 import { CreateRolePayload } from '../dto/role-create.dto';
-import { SortListQuery } from '../dto/sort-list.dto';
+import { UpdateRolePayload } from '../dto/role-update.dto';
+import { SyncRolePermissionsPayload } from '../dto/sync-role-permissions.dto';
+import { Role } from '../entities/role.entity';
+import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { RolesService } from '../services/roles.service';
 
 @Controller()
@@ -12,36 +34,94 @@ export class RolesController {
 
   @UseGuards(AuthGuard())
   @Post('roles')
-  async create(@Body() payload: CreateRolePayload) {
-    return this.rolesService.create(payload);
+  @Transaction()
+  async create(@Body() payload: CreateRolePayload, @Req() req: Request, @TransactionManager() manager: EntityManager) {
+    await setUser(req.user, manager);
+    const { generatedMaps } = await this.rolesService.create(manager, payload);
+    const [{ id }] = generatedMaps;
+
+    return { id };
   }
 
   @UseGuards(AuthGuard())
   @Get('roles')
-  async list(@Query() query: SortListQuery) {
-    const { skip, take, order: orderStr } = query;
-    // TODO: pull this into the DTO (somehow)
-    const order = orderStr
-      .split(',')
-      .map((row) => row.split(':'))
-      .reduce((o, [k, v]) => ((o[k.trim().toLocaleLowerCase()] = (v || 'asc').trim().toUpperCase()), o), {});
+  @Transaction()
+  async list(@Query() query: FilterListQuery<Role>, @TransactionManager() manager: EntityManager) {
+    const { skip, take, order } = query;
     const options = {
       skip: +skip,
       take: +take,
       order
     };
 
-    return this.rolesService.findAll(options);
+    return this.rolesService.findAll(manager, options);
   }
 
-  @MessagePattern('roles.role.find')
-  async findBy(@Payload() name: string) {
-    return await this.rolesService.findByName(name);
+  @UseGuards(AuthGuard())
+  @Get('roles/:id')
+  @Transaction()
+  async findById(@Param('id') id: number, @Res() res: Response, @TransactionManager() manager: EntityManager) {
+    const response = await this.rolesService.findBy(manager, { id });
+    const statusCode = response ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+    res.status(statusCode).send(response);
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('roles/:id')
+  @Transaction()
+  async updateById(
+    @Param('id') id: number,
+    @Body(new NoEmptyPayloadPipe()) payload: UpdateRolePayload,
+    @Req() req: Request,
+    @Res() res: Response,
+    @TransactionManager() manager: EntityManager
+  ) {
+    await setUser(req.user, manager);
+    try {
+      const { affected } = await this.rolesService.update(manager, id, payload);
+      const statusCode = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+      res.status(statusCode).send();
+    } catch (error) {
+      throw new UnprocessableEntityException(error.message);
+    }
   }
 
   @UseGuards(AuthGuard())
   @Delete('roles/:id')
-  async delete(@Param('id') id: number) {
-    return this.rolesService.delete(id);
+  @Transaction()
+  async deleteById(
+    @Param('id') id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+    @TransactionManager() manager: EntityManager
+  ) {
+    await setUser(req.user, manager);
+    const { affected } = await this.rolesService.delete(manager, id);
+    const status = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+    res.status(status).send();
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('roles/:id/permissions/sync')
+  @Transaction()
+  async syncPermissions(
+    @Param('id') id: number,
+    @Body(new NoEmptyPayloadPipe()) payload: SyncRolePermissionsPayload,
+    @Req() req: Request,
+    @TransactionManager() manager: EntityManager
+  ) {
+    await setUser(req.user, manager);
+    const { permissionIds } = payload;
+    try {
+      return await this.rolesService.syncPermissions(manager, id, permissionIds);
+    } catch (error) {
+      throw new UnprocessableEntityException(error.message);
+    }
+  }
+
+  @MessagePattern('roles.role.findByName')
+  @Transaction()
+  async findBy(@Payload() name: string, @TransactionManager() manager: EntityManager) {
+    return await this.rolesService.findBy(manager, { name });
   }
 }

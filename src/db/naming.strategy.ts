@@ -40,6 +40,22 @@ export class DBNamingStrategy extends DefaultNamingStrategy implements NamingStr
     return snakeCase(`${relationName} ${referencedColumnName}`);
   }
 
+  joinTableName(firstTableName: string, secondTableName: string) {
+    return snakeCase(`${firstTableName} ${secondTableName}`);
+  }
+
+  joinTableColumnDuplicationPrefix(columnName: string, index: number) {
+    return `${columnName}_${index}`;
+  }
+
+  joinTableColumnName(tableName: string, propertyName: string, columnName?: string) {
+    return snakeCase(tableName + '_' + (columnName ? columnName : propertyName));
+  }
+
+  joinTableInverseColumnName(tableName: string, propertyName: string, columnName?: string) {
+    return this.joinTableColumnName(tableName, propertyName, columnName);
+  }
+
   private createNameFromTableColumns(tableOrName: Table | string, columnNames: string[], suffix: string) {
     const clonedColumnNames = [...columnNames];
 

@@ -5,6 +5,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface
 } from 'class-validator';
+import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
@@ -16,7 +17,7 @@ export class RoleExistsValidator implements ValidatorConstraintInterface {
   constructor(protected readonly rolesService: RolesService) {}
   async validate(name: string, args: ValidationArguments) {
     const roleExistsCheck = args.constraints[0];
-    const role = await this.rolesService.findByName(name);
+    const role = await getManager().transaction(async (manager) => await this.rolesService.findBy(manager, { name }));
     return roleExistsCheck ? !!role : !role;
   }
 
