@@ -8,10 +8,10 @@ import { AuditAuthAssignmentType } from '../authorization.types';
 @Entity('audit_user_permission')
 export class AuditUserPermission {
   @PrimaryGeneratedColumn()
-  public id: number;
+  id: number;
 
   @Column({ readonly: true })
-  public userId: number;
+  userId: number;
 
   @Column({ type: 'integer', nullable: false, readonly: true })
   permissionId: number;
