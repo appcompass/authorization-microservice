@@ -3,8 +3,10 @@ import { setUser } from 'src/db/query.utils';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 
 import { Body, Controller, Get, Param, Put, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
+import { GetUserPermissionNamesPayload } from '../dto/get-user-permission-names.dto';
 import { SyncUserPermissionsPayload } from '../dto/sync-user-permissions.dto';
 import { SyncUserRolesPayload } from '../dto/sync-user-roles.dto';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
@@ -61,5 +63,11 @@ export class UserAuthorizationController {
     } catch (error) {
       throw new UnprocessableEntityException(error.message);
     }
+  }
+
+  @MessagePattern('authorization.user.get-permissions')
+  @Transaction()
+  async findByName(@Payload() payload: GetUserPermissionNamesPayload, @TransactionManager() manager: EntityManager) {
+    return await this.userAuthorizationService.getAllPermissionNames(manager, payload);
   }
 }

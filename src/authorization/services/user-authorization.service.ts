@@ -3,6 +3,7 @@ import { EntityManager, In } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
+import { GetUserPermissionNamesPayload } from '../dto/get-user-permission-names.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
 import { UserPermission } from '../entities/user-permission.entity';
@@ -10,8 +11,17 @@ import { UserRole } from '../entities/user-role.entity';
 
 @Injectable()
 export class UserAuthorizationService {
-  async findAllRoles(manager: EntityManager, userId: number): Promise<Role[]> {
-    return await manager
+  async getAllPermissionNames(manager: EntityManager, { userId }: GetUserPermissionNamesPayload): Promise<string[]> {
+    const permissions = await this.findAllPermissions(manager, userId);
+    const roles = await this.findAllRoles(manager, userId, true);
+    return [
+      ...permissions.map((permission) => permission.name),
+      ...roles.flatMap((role) => role.permissions.map((permission) => permission.name))
+    ];
+  }
+
+  async findAllRoles(manager: EntityManager, userId: number, withPermissions: boolean = false): Promise<Role[]> {
+    const query = manager
       .getRepository(Role)
       .createQueryBuilder('role')
       .where(
@@ -22,8 +32,8 @@ export class UserAuthorizationService {
             .where('user_role.user_id = :userId and user_role.role_id = role.id')
         )
       )
-      .setParameter('userId', userId)
-      .getMany();
+      .setParameter('userId', userId);
+    return await (withPermissions ? query.leftJoinAndSelect('role.permissions', 'permissions') : query).getMany();
   }
 
   async findAllPermissions(manager: EntityManager, userId: number): Promise<Permission[]> {
