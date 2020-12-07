@@ -3,6 +3,7 @@ import { EntityManager, FindManyOptions } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
 import { AuditPermission } from '../entities/audit-permission.entity';
+import { AuditRolePermission } from '../entities/audit-role-permission.entity';
 import { AuditRole } from '../entities/audit-role.entity';
 import { AuditUserPermission } from '../entities/audit-user-permission.entity';
 import { AuditUserRole } from '../entities/audit-user-role.entity';
@@ -26,11 +27,18 @@ export class AuditLogsService {
   ): Promise<AuditUserPermission[]> {
     return await manager.getRepository(AuditUserPermission).find(options);
   }
-  // findByIds
+
   async findAllAuditUserRoles(
     manager: EntityManager,
     options?: FindManyOptions<AuditUserRole>
   ): Promise<AuditUserRole[]> {
     return await manager.getRepository(AuditUserRole).find(options);
+  }
+
+  async findAllAuditRolePermissions(
+    manager: EntityManager,
+    options?: FindManyOptions<AuditRolePermission>
+  ): Promise<AuditRolePermission[]> {
+    return await manager.getRepository(AuditRolePermission).find(options);
   }
 }

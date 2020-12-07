@@ -12,25 +12,25 @@ import { SyncUserRolesPayload } from '../dto/sync-user-roles.dto';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { UserAuthorizationService } from '../services/user-authorization.service';
 
-@Controller()
+@Controller('user')
 export class UserAuthorizationController {
   constructor(private readonly userAuthorizationService: UserAuthorizationService) {}
   @UseGuards(AuthGuard())
-  @Get('user/:id/roles')
+  @Get(':id/roles')
   @Transaction()
   async listUserRoles(@Param('id') id: number, @TransactionManager() manager: EntityManager) {
     return this.userAuthorizationService.findAllRoles(manager, id);
   }
 
   @UseGuards(AuthGuard())
-  @Get('user/:id/permissions')
+  @Get(':id/permissions')
   @Transaction()
   async listUserPermissions(@Param('id') id: number, @TransactionManager() manager: EntityManager) {
     return this.userAuthorizationService.findAllPermissions(manager, id);
   }
 
   @UseGuards(AuthGuard())
-  @Put('user/:id/roles/sync')
+  @Put(':id/roles/sync')
   @Transaction()
   async syncUserRoles(
     @Param('id') id: number,
@@ -48,7 +48,7 @@ export class UserAuthorizationController {
   }
 
   @UseGuards(AuthGuard())
-  @Put('user/:id/permissions/sync')
+  @Put(':id/permissions/sync')
   @Transaction()
   async syncUserPermissions(
     @Param('id') id: number,

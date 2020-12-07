@@ -21,6 +21,7 @@ import { AuthGuard } from '@nestjs/passport';
 
 import { setUser } from '../../db/query.utils';
 import { FilterListQuery } from '../dto/filter-list.dto';
+import { RegisterRolesPayload } from '../dto/register-roles.dto';
 import { CreateRolePayload } from '../dto/role-create.dto';
 import { UpdateRolePayload } from '../dto/role-update.dto';
 import { SyncRolePermissionsPayload } from '../dto/sync-role-permissions.dto';
@@ -28,12 +29,12 @@ import { Role } from '../entities/role.entity';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { RolesService } from '../services/roles.service';
 
-@Controller()
+@Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @UseGuards(AuthGuard())
-  @Post('roles')
+  @Post()
   @Transaction()
   async create(@Body() payload: CreateRolePayload, @Req() req: Request, @TransactionManager() manager: EntityManager) {
     await setUser(req.user, manager);
@@ -44,7 +45,7 @@ export class RolesController {
   }
 
   @UseGuards(AuthGuard())
-  @Get('roles')
+  @Get()
   @Transaction()
   async list(@Query() query: FilterListQuery<Role>, @TransactionManager() manager: EntityManager) {
     const { skip, take, order } = query;
@@ -58,7 +59,7 @@ export class RolesController {
   }
 
   @UseGuards(AuthGuard())
-  @Get('roles/:id')
+  @Get(':id')
   @Transaction()
   async findById(@Param('id') id: number, @Res() res: Response, @TransactionManager() manager: EntityManager) {
     const response = await this.rolesService.findBy(manager, { id });
@@ -67,7 +68,7 @@ export class RolesController {
   }
 
   @UseGuards(AuthGuard())
-  @Put('roles/:id')
+  @Put(':id')
   @Transaction()
   async updateById(
     @Param('id') id: number,
@@ -87,7 +88,7 @@ export class RolesController {
   }
 
   @UseGuards(AuthGuard())
-  @Delete('roles/:id')
+  @Delete(':id')
   @Transaction()
   async deleteById(
     @Param('id') id: number,
@@ -102,7 +103,7 @@ export class RolesController {
   }
 
   @UseGuards(AuthGuard())
-  @Put('roles/:id/permissions/sync')
+  @Put(':id/permissions/sync')
   @Transaction()
   async syncPermissions(
     @Param('id') id: number,
@@ -123,5 +124,11 @@ export class RolesController {
   @Transaction()
   async findBy(@Payload() name: string, @TransactionManager() manager: EntityManager) {
     return await this.rolesService.findBy(manager, { name });
+  }
+
+  @MessagePattern('authorization.register.roles')
+  @Transaction()
+  async registerRoles(@Payload() payload: RegisterRolesPayload[], @TransactionManager() manager: EntityManager) {
+    return await this.rolesService.registerRoles(manager, payload);
   }
 }

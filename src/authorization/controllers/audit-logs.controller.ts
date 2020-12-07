@@ -11,12 +11,12 @@ import { AuditUserRole } from '../entities/audit-user-role.entity';
 import { PermissionsGuard } from '../guards/permissions.guard';
 import { AuditLogsService } from '../services/audit-logs.service';
 
-@Controller()
+@Controller('audit')
 export class AuditLogsController {
   constructor(private readonly auditLogsService: AuditLogsService) {}
   @UseGuards(AuthGuard(), PermissionsGuard)
-  @Get('audit/permissions')
-  @Permissions('authorization.audit')
+  @Get('permissions')
+  @Permissions('authorization.audit.permission')
   @Transaction()
   async listAuditPermissions(
     @Query() query: FilterListQuery<AuditPermission>,
@@ -32,8 +32,8 @@ export class AuditLogsController {
   }
 
   @UseGuards(AuthGuard(), PermissionsGuard)
-  @Get('audit/roles')
-  @Permissions('authorization.audit')
+  @Get('roles')
+  @Permissions('authorization.audit.role')
   @Transaction()
   async listAuditRoles(@Query() query: FilterListQuery<AuditRole>, @TransactionManager() manager: EntityManager) {
     const { skip, take, order } = query;
@@ -46,8 +46,8 @@ export class AuditLogsController {
   }
 
   @UseGuards(AuthGuard(), PermissionsGuard)
-  @Get('audit/user-permissions')
-  @Permissions('authorization.audit')
+  @Get('user-permissions')
+  @Permissions('authorization.audit.user-permission')
   @Transaction()
   async listAuditUserPermissions(
     @Query() query: FilterListQuery<AuditPermission>,
@@ -63,8 +63,8 @@ export class AuditLogsController {
   }
 
   @UseGuards(AuthGuard(), PermissionsGuard)
-  @Get('audit/user-roles')
-  @Permissions('authorization.audit')
+  @Get('user-roles')
+  @Permissions('authorization.audit.user-role')
   @Transaction()
   async listAuditUserRoles(
     @Query() query: FilterListQuery<AuditUserRole>,
@@ -79,5 +79,24 @@ export class AuditLogsController {
       order
     };
     return this.auditLogsService.findAllAuditUserRoles(manager, options);
+  }
+
+  @UseGuards(AuthGuard(), PermissionsGuard)
+  @Get('role-permissions')
+  @Permissions('authorization.audit.role-permission')
+  @Transaction()
+  async listAuditRolePermissions(
+    @Query() query: FilterListQuery<AuditUserRole>,
+    @Query('where') where: any,
+    @TransactionManager() manager: EntityManager
+  ) {
+    const { skip, take, order } = query;
+    const options = {
+      where,
+      skip: +skip,
+      take: +take,
+      order
+    };
+    return this.auditLogsService.findAllAuditRolePermissions(manager, options);
   }
 }

@@ -1,7 +1,8 @@
-import { EntityManager, FindConditions, FindManyOptions } from 'typeorm';
+import { EntityManager, FindConditions, FindManyOptions, In } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
+import { RegisterRolesPayload } from '../dto/register-roles.dto';
 import { UpdateRolePayload } from '../dto/role-update.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
@@ -43,5 +44,44 @@ export class RolesService {
       added,
       unchanged
     };
+  }
+
+  async registerRoles(manager: EntityManager, payload: RegisterRolesPayload[]) {
+    for (let index = 0; index < payload.length; index++) {
+      await this.registerRole(manager, payload[index]);
+    }
+  }
+
+  async registerRole(manager: EntityManager, payload: RegisterRolesPayload) {
+    const { permissions, ...roleData } = payload;
+    const roleId = await this.findOrCreateRoleId(manager, roleData);
+    const permissionIds = await this.findOrCreatePermissionIds(manager, permissions);
+    await this.syncPermissions(manager, roleId, permissionIds);
+  }
+
+  async findOrCreatePermissionIds(manager: EntityManager, payload: Partial<Role>[]) {
+    const where = { name: In(payload.map(({ name }) => name)) };
+    const foundPermissions = await manager.getRepository(Permission).find({ where });
+    const foundNames = foundPermissions.map((permission) => permission.name);
+    const foundIds = foundPermissions.map((permission) => permission.id);
+    const permissionsToCreate = payload.filter(({ name }) => !foundNames.includes(name));
+    const { generatedMaps } = await manager.insert(Permission, permissionsToCreate);
+    const createdIds: number[] = generatedMaps.map(({ id }) => id);
+    return [...foundIds, ...createdIds];
+  }
+
+  async findOrCreateRoleId(manager: EntityManager, { name, label, description }: Partial<Role>) {
+    const role = await this.findBy(manager, { name });
+    if (role) return role.id;
+
+    const {
+      generatedMaps: [{ id }]
+    } = await manager.insert(Role, {
+      name,
+      label,
+      description
+    });
+
+    return id;
   }
 }

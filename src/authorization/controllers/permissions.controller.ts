@@ -26,12 +26,12 @@ import { Permission } from '../entities/permission.entity';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { PermissionsService } from '../services/permissions.service';
 
-@Controller()
+@Controller('permissions')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
   @UseGuards(AuthGuard())
-  @Post('permissions')
+  @Post()
   @Transaction()
   async create(
     @Body() payload: CreatePermissionPayload,
@@ -46,7 +46,7 @@ export class PermissionsController {
   }
 
   @UseGuards(AuthGuard())
-  @Get('permissions')
+  @Get()
   @Transaction()
   async list(@Query() query: FilterListQuery<Permission>, @TransactionManager() manager: EntityManager) {
     const { skip, take, order } = query;
@@ -59,7 +59,7 @@ export class PermissionsController {
   }
 
   @UseGuards(AuthGuard())
-  @Get('permissions/:id')
+  @Get(':id')
   @Transaction()
   async findById(@Param('id') id: number, @Res() res: Response, @TransactionManager() manager: EntityManager) {
     const response = await this.permissionsService.findBy(manager, { id });
@@ -68,7 +68,7 @@ export class PermissionsController {
   }
 
   @UseGuards(AuthGuard())
-  @Put('permissions/:id')
+  @Put(':id')
   @Transaction()
   async updateById(
     @Param('id') id: number,
@@ -84,7 +84,7 @@ export class PermissionsController {
   }
 
   @UseGuards(AuthGuard())
-  @Delete('permissions/:id')
+  @Delete(':id')
   @Transaction()
   async deleteById(
     @Param('id') id: number,
