@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { MessagingService } from 'src/messaging/messaging.service';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 
 import {
@@ -16,10 +17,11 @@ import {
   UnprocessableEntityException,
   UseGuards
 } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
 import { setUser } from '../../db/query.utils';
+import { EventPayload } from '../dto/event-payload.dto';
 import { FilterListQuery } from '../dto/filter-list.dto';
 import { RegisterRolesPayload } from '../dto/register-roles.dto';
 import { CreateRolePayload } from '../dto/role-create.dto';
@@ -31,7 +33,7 @@ import { RolesService } from '../services/roles.service';
 
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(private readonly messagingService: MessagingService, private readonly rolesService: RolesService) {}
 
   @UseGuards(AuthGuard())
   @Post()
@@ -126,9 +128,14 @@ export class RolesController {
     return await this.rolesService.findBy(manager, { name });
   }
 
-  @MessagePattern('authorization.register.roles')
+  @EventPattern('authorization.register.roles')
   @Transaction()
-  async registerRoles(@Payload() payload: RegisterRolesPayload[], @TransactionManager() manager: EntityManager) {
-    return await this.rolesService.registerRoles(manager, payload);
+  async registerRoles(
+    @Payload() payload: EventPayload<RegisterRolesPayload[]>,
+    @TransactionManager() manager: EntityManager
+  ) {
+    const { data, respondTo } = payload;
+    await this.rolesService.registerRoles(manager, data);
+    if (respondTo) this.messagingService.emit(respondTo, true);
   }
 }

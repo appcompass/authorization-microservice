@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { setUser } from 'src/db/query.utils';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 
-import { Body, Controller, Get, Param, Put, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -40,11 +40,7 @@ export class UserAuthorizationController {
   ) {
     await setUser(req.user, manager);
     const { roleIds } = payload;
-    try {
-      return await this.userAuthorizationService.syncRoles(manager, id, roleIds);
-    } catch (error) {
-      throw new UnprocessableEntityException(error.message);
-    }
+    return await this.userAuthorizationService.syncRoles(manager, id, roleIds);
   }
 
   @UseGuards(AuthGuard())
@@ -58,11 +54,7 @@ export class UserAuthorizationController {
   ) {
     await setUser(req.user, manager);
     const { permissionIds } = payload;
-    try {
-      return await this.userAuthorizationService.syncPermissions(manager, id, permissionIds);
-    } catch (error) {
-      throw new UnprocessableEntityException(error.message);
-    }
+    return await this.userAuthorizationService.syncPermissions(manager, id, permissionIds);
   }
 
   @MessagePattern('authorization.user.get-permissions')

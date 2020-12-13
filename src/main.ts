@@ -73,7 +73,8 @@ async function bootstrap() {
   app.connectMicroservice({
     transport: Transport.NATS,
     options: {
-      url: configService.get('NATS_URL')
+      url: configService.get('NATS_URL'),
+      queue: 'authorization'
     }
   });
 
