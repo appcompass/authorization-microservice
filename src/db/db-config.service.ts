@@ -1,9 +1,8 @@
-import { AuditPermission } from 'src/authorization/entities/audit-permission.entity';
-import { AuditRolePermission } from 'src/authorization/entities/audit-role-permission.entity';
-import { AuditRole } from 'src/authorization/entities/audit-role.entity';
-import { AuditUserPermission } from 'src/authorization/entities/audit-user-permission.entity';
-import { AuditUserRole } from 'src/authorization/entities/audit-user-role.entity';
-import { ConnectionOptions } from 'typeorm';
+import { AuditPermission } from '../authorization/entities/audit-permission.entity';
+import { AuditRolePermission } from '../authorization/entities/audit-role-permission.entity';
+import { AuditRole } from '../authorization/entities/audit-role.entity';
+import { AuditUserPermission } from '../authorization/entities/audit-user-permission.entity';
+import { AuditUserRole } from '../authorization/entities/audit-user-role.entity';
 
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
@@ -14,6 +13,7 @@ import { UserPermission } from '../authorization/entities/user-permission.entity
 import { UserRole } from '../authorization/entities/user-role.entity';
 import { ConfigService } from '../config/config.service';
 import { DBNamingStrategy } from './naming.strategy';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 export const entities: Function[] = [
   AuditPermission,
@@ -55,6 +55,6 @@ export class DBConfigService implements TypeOrmOptionsFactory {
         migrationsDir: 'src/db/migrations',
         subscribersDir: 'src/db/subscribers'
       }
-    } as ConnectionOptions;
+    } as PostgresConnectionOptions;
   }
 }
