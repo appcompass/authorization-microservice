@@ -16,7 +16,6 @@ import {
   Res,
   UseGuards
 } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 
 import { FilterListQuery } from '../dto/filter-list.dto';
@@ -96,11 +95,5 @@ export class PermissionsController {
     const { affected } = await this.permissionsService.delete(manager, id);
     const status = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
     res.status(status).send();
-  }
-
-  @MessagePattern('permissions.permission.findByName')
-  @Transaction()
-  async findByName(@Payload() name: string, @TransactionManager() manager: EntityManager) {
-    return await this.permissionsService.findBy(manager, { name });
   }
 }

@@ -2,12 +2,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 import { AuditAuthAssignmentType } from '../../authorization/authorization.types';
 import { ConfigService } from '../../config/config.service';
-import { getVaultConfig } from '../../config/vault.utils';
+import { VaultConfig } from '../../config/vault.utils';
 import { dbUserIdVarName } from '../query.utils';
 
 export class addsAuditUserRoleEntry1605563456253 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const config = new ConfigService(await getVaultConfig());
+    const config = new ConfigService(await new VaultConfig().getServiceConfig());
     const schema = config.get('dbSchema');
     await queryRunner.query(
       `
@@ -54,7 +54,7 @@ export class addsAuditUserRoleEntry1605563456253 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const config = new ConfigService(await getVaultConfig());
+    const config = new ConfigService(await new VaultConfig().getServiceConfig());
     const schema = config.get('dbSchema');
     await queryRunner.query(`DROP FUNCTION ${schema}.adds_audit_user_role_entry() CASCADE`);
   }

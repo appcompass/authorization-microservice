@@ -11,8 +11,8 @@ export class FilterListQuery<T> {
   readonly skip: string = '0';
 
   @IsOptional()
-  @Transform((order: string) =>
-    order
+  @Transform(({ value }) =>
+    value
       .split(',')
       .map((row) => row.split(':'))
       .reduce((o, [k, v]) => ((o[k.trim().toLocaleLowerCase()] = (v || 'asc').trim().toUpperCase()), o), {})

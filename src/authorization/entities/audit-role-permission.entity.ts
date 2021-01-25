@@ -22,7 +22,7 @@ export class AuditRolePermission {
   @Column({ type: 'integer', nullable: false, readonly: true })
   changeByUserId: number;
 
-  @Transform((created) => created?.format() || null)
+  @Transform(({ value }) => value?.format() || null)
   @CreateDateColumn({ transformer: new DateTransformer(), readonly: true })
   createdAt: Moment;
 }

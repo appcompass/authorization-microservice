@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { DBConfigService, entities } from '../db/db-config.service';
 import { MessagingModule } from '../messaging/messaging.module';
 import { AuditLogsController } from './controllers/audit-logs.controller';
+import { InterServiceController } from './controllers/inter-service.controller';
 import { PermissionsController } from './controllers/permissions.controller';
 import { RolesController } from './controllers/roles.controller';
 import { UserAuthorizationController } from './controllers/user-authorization.controller';
@@ -22,8 +23,15 @@ import { SameAsValidator } from './validators/same-as.validator';
 
 @Module({
   imports: [TypeOrmModule.forFeature(entities), MessagingModule, PassportModule.register({ defaultStrategy: 'jwt' })],
-  controllers: [PermissionsController, RolesController, UserAuthorizationController, AuditLogsController],
+  controllers: [
+    PermissionsController,
+    RolesController,
+    UserAuthorizationController,
+    AuditLogsController,
+    InterServiceController
+  ],
   providers: [
+    Logger,
     JwtStrategy,
     DBConfigService,
     PermissionsService,

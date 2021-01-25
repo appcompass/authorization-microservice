@@ -26,7 +26,7 @@ export class AuditRole {
   @Column({ type: 'jsonb', nullable: true, readonly: true })
   newData: Role;
 
-  @Transform((created) => created?.format() || null)
+  @Transform(({ value }) => value?.format() || null)
   @CreateDateColumn({ transformer: new DateTransformer(), readonly: true })
   createdAt: Moment;
 }

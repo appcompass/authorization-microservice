@@ -1,6 +1,8 @@
 import * as Joi from 'joi';
 import { DatabaseType } from 'typeorm';
 
+import { VaultConfig } from './vault.utils';
+
 export type EnvConfig = Record<string, string>;
 
 export interface ValidConfig {
@@ -20,11 +22,12 @@ export interface ValidConfig {
   dbUser: string;
   dbPassword: string;
   dbName: string;
-  dbSyncronize: boolean;
+  dbSynchronize: boolean;
 }
 
 export class ConfigService {
   private readonly config: ValidConfig;
+  public vault: VaultConfig;
   private schema: Joi.ObjectSchema = Joi.object({
     NODE_ENV: Joi.string().default('local'),
     npm_package_name: Joi.string(),
@@ -42,11 +45,12 @@ export class ConfigService {
     dbUser: Joi.string(),
     dbPassword: Joi.string().allow(''),
     dbName: Joi.string(),
-    dbSyncronize: Joi.boolean()
+    dbSynchronize: Joi.boolean()
   }).options({ stripUnknown: true });
 
   constructor(config: EnvConfig) {
     this.config = this.validate({ ...process.env, ...config });
+    this.vault = new VaultConfig();
   }
 
   private validate(config: EnvConfig): ValidConfig {

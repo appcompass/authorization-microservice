@@ -3,7 +3,6 @@ import { EntityManager, FindConditions, FindManyOptions, In } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
 import { RegisterRolesPayload } from '../dto/register-roles.dto';
-import { UpdateRolePayload } from '../dto/role-update.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
 
@@ -21,7 +20,7 @@ export class RolesService {
     return await manager.insert(Role, data);
   }
 
-  async update(manager: EntityManager, id: number, data: Partial<UpdateRolePayload>) {
+  async update(manager: EntityManager, id: number, data: Partial<Role>) {
     const { affected } = await manager.createQueryBuilder().update(Role).set(data).where('id = :id', { id }).execute();
     return { affected };
   }
