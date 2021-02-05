@@ -15,7 +15,7 @@ if (error) {
 }
 
 const queryRunner = (query) =>
-  import('./src/db/cli-config').then((config) =>
+  import('./db/cli-config').then((config) =>
     createConnection({ ...config, synchronize: false, migrationsRun: false })
       .then((connection) => connection.query(query(config)).then(() => connection.close()))
       .catch(console.log)
