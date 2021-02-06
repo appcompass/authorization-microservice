@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { DatabaseType } from 'typeorm';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 import { VaultConfig } from './vault.utils';
 
@@ -15,14 +15,7 @@ export interface ValidConfig {
   natsUrl: string;
   publicKey: string;
   natsQueue: string;
-  dbType: DatabaseType;
-  dbHost: string;
-  dbPort: number;
-  dbSchema: string;
-  dbUser: string;
-  dbPassword: string;
-  dbName: string;
-  dbSynchronize: boolean;
+  db: PostgresConnectionOptions;
 }
 
 export class ConfigService {
@@ -38,14 +31,7 @@ export class ConfigService {
     natsUrl: Joi.string(),
     publicKey: Joi.string(),
     natsQueue: Joi.string(),
-    dbType: Joi.string(),
-    dbHost: Joi.string(),
-    dbPort: Joi.number(),
-    dbSchema: Joi.string(),
-    dbUser: Joi.string(),
-    dbPassword: Joi.string().allow(''),
-    dbName: Joi.string(),
-    dbSynchronize: Joi.boolean()
+    db: Joi.object()
   }).options({ stripUnknown: true });
 
   constructor(config: EnvConfig) {

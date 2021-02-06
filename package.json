@@ -23,7 +23,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/setup schema:create && node dist/main",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm --config src/db/cli-config.ts",
     "lint": "eslint '*/**/*.{js,ts}'",
     "deps:check": "depcruise --validate .dependency-cruiser.json src",

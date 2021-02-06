@@ -8,7 +8,7 @@ import { dbUserIdVarName } from '../query.utils';
 export class addsAuditUserRoleEntry1605563456253 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const config = new ConfigService(await new VaultConfig().getServiceConfig());
-    const schema = config.get('dbSchema');
+    const { schema } = config.get('db');
     await queryRunner.query(
       `
           CREATE OR REPLACE FUNCTION ${schema}.adds_audit_user_role_entry() RETURNS TRIGGER AS
@@ -55,7 +55,7 @@ export class addsAuditUserRoleEntry1605563456253 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const config = new ConfigService(await new VaultConfig().getServiceConfig());
-    const schema = config.get('dbSchema');
+    const { schema } = config.get('db');
     await queryRunner.query(`DROP FUNCTION ${schema}.adds_audit_user_role_entry() CASCADE`);
   }
 }

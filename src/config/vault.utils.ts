@@ -23,35 +23,14 @@ export class VaultConfig {
 
   async getServiceConfig() {
     try {
-      const [
-        natsUrl,
-        publicKey,
-        serviceHost,
-        servicePort,
-        natsQueue,
-        dbType,
-        dbHost,
-        dbPort,
-        dbSchema,
-        dbUser,
-        dbPassword,
-        dbName,
-        dbSynchronize
-      ] = await Promise.all(
+      const [natsUrl, publicKey, serviceHost, servicePort, natsQueue, db] = await Promise.all(
         [
           'secret/service/shared/natsUrl',
           'secret/service/shared/publicKey',
           `secret/service/shared/${this.serviceName}ServiceHost`,
           `secret/service/shared/${this.serviceName}ServicePort`,
           `secret/service/${this.serviceName}/natsQueue`,
-          `secret/service/${this.serviceName}/dbType`,
-          `secret/service/${this.serviceName}/dbHost`,
-          `secret/service/${this.serviceName}/dbPort`,
-          `secret/service/${this.serviceName}/dbSchema`,
-          `secret/service/${this.serviceName}/dbUser`,
-          `secret/service/${this.serviceName}/dbPassword`,
-          `secret/service/${this.serviceName}/dbName`,
-          `secret/service/${this.serviceName}/dbSynchronize`
+          `secret/service/${this.serviceName}/db`
         ].map((path) => this.client.read(path).then(({ data }) => data.value))
       );
       return {
@@ -60,17 +39,10 @@ export class VaultConfig {
         natsUrl,
         publicKey,
         natsQueue,
-        dbType,
-        dbHost,
-        dbPort,
-        dbSchema,
-        dbUser,
-        dbPassword,
-        dbName,
-        dbSynchronize
+        db
       };
     } catch (error) {
-      throw Error(error.response.body.warnings);
+      throw Error(error.error);
     }
   }
 }
