@@ -39,7 +39,7 @@ export class VaultConfig {
         natsUrl,
         publicKey,
         natsQueue,
-        db
+        db: JSON.parse(db)
       };
     } catch (error) {
       throw Error(error.error);
