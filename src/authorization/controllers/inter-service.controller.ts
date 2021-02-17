@@ -1,6 +1,7 @@
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 
-import { Body, Controller, Logger, Post } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { MessagingService } from '../../messaging/messaging.service';
 import { EventPayload } from '../dto/event-payload.dto';
@@ -22,25 +23,22 @@ export class InterServiceController {
     this.logger.setContext(this.constructor.name);
   }
 
-  // @UseGuards(AuthGuard('api'))
-  @Post('permissions.permission.findByName')
+  @MessagePattern('permissions.permission.findByName')
   @Transaction()
-  async findPermissionByName(@Body() name: string, @TransactionManager() manager: EntityManager) {
+  async findPermissionByName(@Payload() name: string, @TransactionManager() manager: EntityManager) {
     return await this.permissionsService.findBy(manager, { name });
   }
 
-  // @UseGuards(AuthGuard('api'))
-  @Post('roles.role.findByName')
+  @MessagePattern('roles.role.findByName')
   @Transaction()
-  async findBy(@Body() name: string, @TransactionManager() manager: EntityManager) {
+  async findBy(@Payload() name: string, @TransactionManager() manager: EntityManager) {
     return await this.rolesService.findBy(manager, { name });
   }
 
-  // @UseGuards(AuthGuard('api'))
-  @Post('authorization.register.roles')
+  @MessagePattern('authorization.register.roles')
   @Transaction()
   async registerRoles(
-    @Body() payload: EventPayload<RegisterRolesPayload[]>,
+    @Payload() payload: EventPayload<RegisterRolesPayload[]>,
     @TransactionManager() manager: EntityManager
   ) {
     const { data, respondTo } = payload;
@@ -48,10 +46,9 @@ export class InterServiceController {
     if (respondTo) this.messagingService.emit(respondTo, true);
   }
 
-  // @UseGuards(AuthGuard('api'))
-  @Post('authorization.user.get-permissions')
+  @MessagePattern('authorization.user.get-permissions')
   @Transaction()
-  async findByName(@Body() payload: GetUserPermissionNamesPayload, @TransactionManager() manager: EntityManager) {
+  async findByName(@Payload() payload: GetUserPermissionNamesPayload, @TransactionManager() manager: EntityManager) {
     return await this.userAuthorizationService.getAllPermissionNames(manager, payload);
   }
 }
