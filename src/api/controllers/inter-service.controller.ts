@@ -7,6 +7,8 @@ import { MessagingService } from '../../messaging/messaging.service';
 import { EventPayload } from '../dto/event-payload.dto';
 import { GetUserPermissionNamesPayload } from '../dto/get-user-permission-names.dto';
 import { RegisterRolesPayload } from '../dto/register-roles.dto';
+import { Permission } from '../entities/permission.entity';
+import { Role } from '../entities/role.entity';
 import { PermissionsService } from '../services/permissions.service';
 import { RolesService } from '../services/roles.service';
 import { UserAuthorizationService } from '../services/user-authorization.service';
@@ -23,16 +25,16 @@ export class InterServiceController {
     this.logger.setContext(this.constructor.name);
   }
 
-  @MessagePattern('permissions.permission.findByName')
+  @MessagePattern('authorization.permission.find-by')
   @Transaction()
-  async findPermissionByName(@Payload() name: string, @TransactionManager() manager: EntityManager) {
-    return await this.permissionsService.findBy(manager, { name });
+  async findPermissionBy(@Payload() payload: Partial<Permission>, @TransactionManager() manager: EntityManager) {
+    return await this.permissionsService.findBy(manager, payload);
   }
 
-  @MessagePattern('roles.role.findByName')
+  @MessagePattern('authorization.role.find-by')
   @Transaction()
-  async findBy(@Payload() name: string, @TransactionManager() manager: EntityManager) {
-    return await this.rolesService.findBy(manager, { name });
+  async findRoleBy(@Payload() payload: Partial<Role>, @TransactionManager() manager: EntityManager) {
+    return await this.rolesService.findBy(manager, payload);
   }
 
   @MessagePattern('authorization.register.roles')
