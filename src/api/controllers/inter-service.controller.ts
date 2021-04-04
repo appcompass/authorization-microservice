@@ -1,4 +1,4 @@
-import { EntityManager, Transaction, TransactionManager } from 'typeorm';
+import { getConnection } from 'typeorm';
 
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
@@ -26,45 +26,48 @@ export class InterServiceController {
   }
 
   @MessagePattern('authorization.permission.find-by')
-  @Transaction()
-  async findPermissionBy(@Payload() payload: Partial<Permission>, @TransactionManager() manager: EntityManager) {
-    return await this.permissionsService.findBy(manager, payload);
+  async findPermissionBy(@Payload() payload: Partial<Permission>) {
+    return await getConnection().transaction(async (manager) => {
+      return await this.permissionsService.findBy(manager, payload);
+    });
   }
 
   @MessagePattern('authorization.role.find-by')
-  @Transaction()
-  async findRoleBy(@Payload() payload: Partial<Role>, @TransactionManager() manager: EntityManager) {
-    return await this.rolesService.findBy(manager, payload);
+  async findRoleBy(@Payload() payload: Partial<Role>) {
+    return await getConnection().transaction(async (manager) => {
+      return await this.rolesService.findBy(manager, payload);
+    });
   }
 
   @MessagePattern('authorization.register.roles')
-  @Transaction()
-  async registerRoles(
-    @Payload() payload: EventPayload<RegisterRolesPayload[]>,
-    @TransactionManager() manager: EntityManager
-  ) {
+  async registerRoles(@Payload() payload: EventPayload<RegisterRolesPayload[]>) {
     const { data, respondTo } = payload;
-    await this.rolesService.registerRoles(manager, data);
-    if (respondTo) this.messagingService.emit(respondTo, true);
+    return await getConnection().transaction(async (manager) => {
+      await this.rolesService.registerRoles(manager, data);
+      if (respondTo) this.messagingService.emit(respondTo, true);
+    });
   }
 
   @MessagePattern('authorization.user.get-permission-names')
-  @Transaction()
-  async findByName(@Payload() payload: UserIdPayload, @TransactionManager() manager: EntityManager) {
-    return await this.userAuthorizationService.getAllPermissionNames(manager, payload);
+  async findByName(@Payload() payload: UserIdPayload) {
+    return await getConnection().transaction(async (manager) => {
+      return await this.userAuthorizationService.getAllPermissionNames(manager, payload);
+    });
   }
 
   @MessagePattern('authorization.user.get-role-ids')
-  @Transaction()
-  async findUserRoles(@Payload() { userId }: UserIdPayload, @TransactionManager() manager: EntityManager) {
-    const roles = await this.userAuthorizationService.findAllRoles(manager, userId);
-    return roles.map((role) => role.id);
+  async findUserRoles(@Payload() { userId }: UserIdPayload) {
+    return await getConnection().transaction(async (manager) => {
+      const roles = await this.userAuthorizationService.findAllRoles(manager, userId);
+      return roles.map((role) => role.id);
+    });
   }
 
   @MessagePattern('authorization.user.get-permission-ids')
-  @Transaction()
-  async findUserPermissions(@Payload() payload: UserIdPayload, @TransactionManager() manager: EntityManager) {
-    const permissions = await this.userAuthorizationService.getAllUserPermission(manager, payload);
-    return permissions.map((permission) => permission.id);
+  async findUserPermissions(@Payload() payload: UserIdPayload) {
+    return await getConnection().transaction(async (manager) => {
+      const permissions = await this.userAuthorizationService.getAllUserPermission(manager, payload);
+      return permissions.map((permission) => permission.id);
+    });
   }
 }

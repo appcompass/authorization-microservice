@@ -1,8 +1,9 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsNumber } from 'class-validator';
 
 import { PermissionsExist } from '../validators/permissions-exist.validator';
 
-export class SyncUserPermissionsPayload {
+export class PermissionIdsPayload {
+  @IsDefined()
   @IsNotEmpty()
   @IsNumber({}, { each: true })
   @PermissionsExist()

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
@@ -36,41 +36,33 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  const options = new DocumentBuilder()
-    .setTitle('AppCompass Authorization Service')
-    .setDescription('A microservice for the AppCompass Web Application Platform')
-    .setVersion('1.0')
-    .addTag('Authorization')
-    .build();
-  const document = SwaggerModule.createDocument(app, options);
-  const redocOptions: RedocOptions = {
-    sortPropsAlphabetically: true,
-    hideDownloadButton: false,
-    hideHostname: false
-  };
-
-  // @ts-ignore
-  await RedocModule.setup('/docs', app, document, redocOptions);
-
   app.enableCors();
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ['"self"'],
-          styleSrc: ['"self"', '"unsafe-inline"'],
-          imgSrc: ['"self"', 'data:', 'validator.swagger.io'],
-          scriptSrc: ['"self"', 'https: "unsafe-inline"']
-        }
-      }
-    })
-  );
+  app.use(helmet());
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,
       max: 100
     })
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('AppCompass Authorization Service')
+    .setDescription('A microservice for the AppCompass Web Application Platform')
+    .setVersion('1.0')
+    .addTag('Authorization')
+    .build();
+  const options: SwaggerDocumentOptions = {
+    operationIdFactory: (controllerKey: string, methodKey: string) => `${controllerKey} ${methodKey}`
+  };
+
+  const document = SwaggerModule.createDocument(app, config, options);
+  const redocOptions: RedocOptions = {
+    sortPropsAlphabetically: true,
+    hideDownloadButton: false,
+    hideHostname: false
+  };
+
+  await RedocModule.setup('/docs', app, document, redocOptions);
 
   app.connectMicroservice(messagingConfigService.eventsConfig);
 

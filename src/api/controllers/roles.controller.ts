@@ -1,51 +1,61 @@
-import { Request, Response } from 'express';
-import { EntityManager, Transaction, TransactionManager } from 'typeorm';
+import { Request } from 'express';
+import { getConnection } from 'typeorm';
 
 import {
   Body,
   Controller,
   Delete,
   Get,
-  HttpStatus,
+  Logger,
+  NotFoundException,
   Param,
   Post,
   Put,
   Query,
   Req,
-  Res,
   UnprocessableEntityException,
   UseGuards
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 
 import { setUser } from '../../db/query.utils';
+import { unauthorizedResponseOptions, unprocessableEntityResponseOptions } from '../api.contract-shapes';
 import { FilterListQuery } from '../dto/filter-list.dto';
+import { IdResponse } from '../dto/id.dto';
+import { PermissionIdsPayload } from '../dto/permission-ids.dto';
 import { CreateRolePayload } from '../dto/role-create.dto';
 import { UpdateRolePayload } from '../dto/role-update.dto';
-import { SyncRolePermissionsPayload } from '../dto/sync-role-permissions.dto';
+import { RowsAffectedResponse } from '../dto/rows-affected.dto';
+import { SyncResponse } from '../dto/sync-response.dto';
 import { Role } from '../entities/role.entity';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { RolesService } from '../services/roles.service';
 
 @Controller('roles')
+@ApiBearerAuth()
+@ApiUnauthorizedResponse(unauthorizedResponseOptions)
+@ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(private readonly logger: Logger, private readonly rolesService: RolesService) {
+    this.logger.setContext(this.constructor.name);
+  }
 
   @UseGuards(AuthGuard())
   @Post()
-  @Transaction()
-  async create(@Body() payload: CreateRolePayload, @Req() req: Request, @TransactionManager() manager: EntityManager) {
-    await setUser(req.user, manager);
-    const { generatedMaps } = await this.rolesService.create(manager, payload);
-    const [{ id }] = generatedMaps;
+  async create(@Body() payload: CreateRolePayload, @Req() req: Request): Promise<IdResponse> {
+    return await getConnection().transaction(async (manager) => {
+      await setUser(req.user, manager);
+      const { generatedMaps } = await this.rolesService.create(manager, payload);
+      const [{ id }] = generatedMaps;
 
-    return { id };
+      return { id };
+    });
   }
 
   @UseGuards(AuthGuard())
   @Get()
-  @Transaction()
-  async list(@Query() query: FilterListQuery<Role>, @TransactionManager() manager: EntityManager) {
+  async list(@Query() query: FilterListQuery<Role>) {
     const { skip, take, order } = query;
     const options = {
       skip: +skip,
@@ -53,68 +63,72 @@ export class RolesController {
       order
     };
 
-    return this.rolesService.findAll(manager, options);
+    return await getConnection().transaction(async (manager) => {
+      try {
+        return this.rolesService.findAll(manager, options);
+      } catch (error) {
+        throw new UnprocessableEntityException(error.message);
+      }
+    });
   }
 
   @UseGuards(AuthGuard())
   @Get(':id')
-  @Transaction()
-  async findById(@Param('id') id: number, @Res() res: Response, @TransactionManager() manager: EntityManager) {
-    const response = await this.rolesService.findBy(manager, { id });
-    const statusCode = response ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-    res.status(statusCode).send(response);
+  async findById(@Param('id') id: number) {
+    return await getConnection().transaction(async (manager) => {
+      try {
+        return await this.rolesService.findBy(manager, { id });
+      } catch (error) {
+        throw new NotFoundException(error.message);
+      }
+    });
   }
 
   @UseGuards(AuthGuard())
   @Put(':id')
-  @Transaction()
   async updateById(
     @Param('id') id: number,
     @Body(new NoEmptyPayloadPipe()) payload: UpdateRolePayload,
-    @Req() req: Request,
-    @Res() res: Response,
-    @TransactionManager() manager: EntityManager
-  ) {
-    await setUser(req.user, manager);
-    try {
-      const { affected } = await this.rolesService.update(manager, id, payload);
-      const statusCode = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-      res.status(statusCode).send();
-    } catch (error) {
-      throw new UnprocessableEntityException(error.message);
-    }
+    @Req() req: Request
+  ): Promise<RowsAffectedResponse> {
+    return await getConnection().transaction(async (manager) => {
+      await setUser(req.user, manager);
+      try {
+        return await this.rolesService.update(manager, id, payload);
+      } catch (error) {
+        throw new UnprocessableEntityException(error.message);
+      }
+    });
   }
 
   @UseGuards(AuthGuard())
   @Delete(':id')
-  @Transaction()
-  async deleteById(
-    @Param('id') id: number,
-    @Req() req: Request,
-    @Res() res: Response,
-    @TransactionManager() manager: EntityManager
-  ) {
-    await setUser(req.user, manager);
-    const { affected } = await this.rolesService.delete(manager, id);
-    const status = affected ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-    res.status(status).send();
+  async deleteById(@Param('id') id: number, @Req() req: Request): Promise<RowsAffectedResponse> {
+    return await getConnection().transaction(async (manager) => {
+      await setUser(req.user, manager);
+      try {
+        return await this.rolesService.delete(manager, id);
+      } catch (error) {
+        throw new NotFoundException(error.message);
+      }
+    });
   }
 
   @UseGuards(AuthGuard())
   @Put(':id/permissions/sync')
-  @Transaction()
   async syncPermissions(
     @Param('id') id: number,
-    @Body(new NoEmptyPayloadPipe()) payload: SyncRolePermissionsPayload,
-    @Req() req: Request,
-    @TransactionManager() manager: EntityManager
-  ) {
-    await setUser(req.user, manager);
-    const { permissionIds } = payload;
-    try {
-      return await this.rolesService.syncPermissions(manager, id, permissionIds);
-    } catch (error) {
-      throw new UnprocessableEntityException(error.message);
-    }
+    @Body(new NoEmptyPayloadPipe()) payload: PermissionIdsPayload,
+    @Req() req: Request
+  ): Promise<SyncResponse> {
+    return await getConnection().transaction(async (manager) => {
+      await setUser(req.user, manager);
+      const { permissionIds } = payload;
+      try {
+        return await this.rolesService.syncPermissions(manager, id, permissionIds);
+      } catch (error) {
+        throw new UnprocessableEntityException(error.message);
+      }
+    });
   }
 }
