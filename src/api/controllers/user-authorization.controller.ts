@@ -24,7 +24,7 @@ export class UserAuthorizationController {
   @Get(':id/permissions')
   @Transaction()
   async listUserPermissions(@Param('id') id: number, @TransactionManager() manager: EntityManager) {
-    return this.userAuthorizationService.findAllPermissions(manager, id);
+    return this.userAuthorizationService.findUserPermissions(manager, id);
   }
 
   @UseGuards(AuthGuard())

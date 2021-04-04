@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class GetUserPermissionNamesPayload {
+export class UserIdPayload {
   @IsNumber()
   @IsNotEmpty()
   readonly userId: number;
