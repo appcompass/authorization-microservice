@@ -3,28 +3,24 @@ import { Moment } from 'moment';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { DateTransformer } from '../../db/transformers/date.transformer';
-import { AuditDataChangeType } from '../authorization.types';
-import { Permission } from './permission.entity';
+import { AuditAuthAssignmentType } from '../api.types';
 
-@Entity('audit_permission')
-export class AuditPermission {
+@Entity('audit_user_permission')
+export class AuditUserPermission {
   @PrimaryGeneratedColumn()
-  public id: number;
+  id: number;
+
+  @Column({ readonly: true })
+  userId: number;
 
   @Column({ type: 'integer', nullable: false, readonly: true })
   permissionId: number;
 
   @Column({ type: 'varchar', length: 12, nullable: false, readonly: true })
-  changeType: AuditDataChangeType;
+  changeType: AuditAuthAssignmentType;
 
   @Column({ type: 'integer', nullable: false, readonly: true })
   changeByUserId: number;
-
-  @Column({ type: 'jsonb', nullable: true, readonly: true })
-  originalData: Permission;
-
-  @Column({ type: 'jsonb', nullable: true, readonly: true })
-  newData: Permission;
 
   @Transform(({ value }) => value?.format() || null)
   @CreateDateColumn({ transformer: new DateTransformer(), readonly: true })

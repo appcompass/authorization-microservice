@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-import { AuditDataChangeType } from '../../authorization/authorization.types';
+import { AuditDataChangeType } from '../../api/api.types';
 import { ConfigService } from '../../config/config.service';
 import { VaultConfig } from '../../config/vault.utils';
 import { dbUserIdVarName } from '../query.utils';

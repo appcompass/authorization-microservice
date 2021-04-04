@@ -1,6 +1,7 @@
-import { Permission } from '../../authorization/entities/permission.entity';
-import { Role } from '../../authorization/entities/role.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
+
+import { Permission } from '../../api/entities/permission.entity';
+import { Role } from '../../api/entities/role.entity';
 
 export const systemPermissions = [
   {

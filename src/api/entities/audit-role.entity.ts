@@ -3,7 +3,7 @@ import { Moment } from 'moment';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { DateTransformer } from '../../db/transformers/date.transformer';
-import { AuditDataChangeType } from '../authorization.types';
+import { AuditDataChangeType } from '../api.types';
 import { Role } from './role.entity';
 
 @Entity('audit_role')

@@ -6,7 +6,7 @@ import { PassportStrategy } from '@nestjs/passport';
 
 import { ConfigService } from '../../config/config.service';
 import { MessagingService } from '../../messaging/messaging.service';
-import { AuthenticatedUser, DecodedToken } from '../authorization.types';
+import { AuthenticatedUser, DecodedToken } from '../api.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

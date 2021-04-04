@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { setUser } from 'src/db/query.utils';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 
 import {
@@ -18,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+import { setUser } from '../../db/query.utils';
 import { FilterListQuery } from '../dto/filter-list.dto';
 import { CreatePermissionPayload } from '../dto/permission-create.dto';
 import { UpdatePermissionPayload } from '../dto/permission-update.dto';

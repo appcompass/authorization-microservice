@@ -1,8 +1,8 @@
-import { existsQuery } from 'src/db/query.utils';
 import { EntityManager, In } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
+import { existsQuery } from '../../db/query.utils';
 import { GetUserPermissionNamesPayload } from '../dto/get-user-permission-names.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';

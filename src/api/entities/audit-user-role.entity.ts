@@ -3,18 +3,18 @@ import { Moment } from 'moment';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { DateTransformer } from '../../db/transformers/date.transformer';
-import { AuditAuthAssignmentType } from '../authorization.types';
+import { AuditAuthAssignmentType } from '../api.types';
 
-@Entity('audit_user_permission')
-export class AuditUserPermission {
+@Entity('audit_user_role')
+export class AuditUserRole {
   @PrimaryGeneratedColumn()
-  id: number;
+  public id: number;
 
   @Column({ readonly: true })
-  userId: number;
+  public userId: number;
 
   @Column({ type: 'integer', nullable: false, readonly: true })
-  permissionId: number;
+  roleId: number;
 
   @Column({ type: 'varchar', length: 12, nullable: false, readonly: true })
   changeType: AuditAuthAssignmentType;

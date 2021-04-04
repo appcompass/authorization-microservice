@@ -1,10 +1,10 @@
 import { Request } from 'express';
-import { setUser } from 'src/db/query.utils';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 
 import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
+import { setUser } from '../../db/query.utils';
 import { SyncUserPermissionsPayload } from '../dto/sync-user-permissions.dto';
 import { SyncUserRolesPayload } from '../dto/sync-user-roles.dto';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
