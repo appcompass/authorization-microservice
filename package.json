@@ -24,7 +24,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/setup schema:create && node dist/main",
-    "setup:secrets": "ts-node src/setup.ts secrets:init",
+    "setup:secrets": "ts-node src/setup.ts setup:secrets",
     "setup:db": "ts-node src/setup.ts schema:create",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm --config src/db/cli-config.ts",
     "lint": "eslint '*/**/*.{js,ts}'",
