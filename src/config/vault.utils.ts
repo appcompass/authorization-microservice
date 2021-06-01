@@ -23,26 +23,24 @@ export class VaultConfig {
 
   async getServiceConfig() {
     try {
-      const [publicKey, serviceHost, servicePort, natsUrl, natsQueue, db] = await Promise.all(
+      const [publicKey, serviceHost, servicePort, interServiceTransportConfig, db] = await Promise.all(
         [
           'secret/service/shared/publicKey',
           `secret/service/shared/${this.serviceName}ServiceHost`,
           `secret/service/shared/${this.serviceName}ServicePort`,
-          `secret/service/${this.serviceName}/natsUrl`,
-          `secret/service/${this.serviceName}/natsQueue`,
+          `secret/service/${this.serviceName}/interServiceTransportConfig`,
           `secret/service/${this.serviceName}/db`
         ].map((path) => this.client.read(path).then(({ data }) => data.value))
       );
       return {
+        publicKey,
         serviceHost,
         servicePort,
-        publicKey,
-        natsUrl,
-        natsQueue,
+        interServiceTransportConfig: JSON.parse(interServiceTransportConfig),
         db: JSON.parse(db)
       };
     } catch (error) {
-      throw Error(error.error);
+      throw Error(error.response.body.warnings);
     }
   }
 }

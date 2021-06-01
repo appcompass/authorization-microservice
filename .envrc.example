@@ -1,0 +1,11 @@
+SERVICE_PORT=3020
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_SCHEMA=auth
+DB_USER=postgres
+DB_PASSWORD=
+DB_NAME=appdb
+DB_SYNCHRONIZE=true
+export INTERSERVICE_TRANSPORT_CONFIG='{"transport": 2,"options": {"url": "nats://localhost:4222","queue": "authorization"}}'
+export VAULT_ADDR=http://127.0.0.1:8200
+export VAULT_TOKEN=mytoken

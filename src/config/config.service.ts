@@ -1,6 +1,8 @@
 import * as Joi from 'joi';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
+import { ClientOptions } from '@nestjs/microservices';
+
 import { VaultConfig } from './vault.utils';
 
 export type EnvConfig = Record<string, string>;
@@ -12,9 +14,8 @@ export interface ValidConfig {
   npm_package_version: string;
   serviceHost: string;
   servicePort: number;
-  natsUrl: string;
   publicKey: string;
-  natsQueue: string;
+  interServiceTransportConfig: ClientOptions;
   db: PostgresConnectionOptions;
 }
 
@@ -28,9 +29,8 @@ export class ConfigService {
     npm_package_version: Joi.string(),
     serviceHost: Joi.string(),
     servicePort: Joi.number(),
-    natsUrl: Joi.string(),
     publicKey: Joi.string(),
-    natsQueue: Joi.string(),
+    interServiceTransportConfig: Joi.object(),
     db: Joi.object()
   }).options({ stripUnknown: true });
 
