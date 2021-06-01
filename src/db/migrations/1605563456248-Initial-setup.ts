@@ -1,11 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 import { ConfigService } from '../../config/config.service';
-import { VaultConfig } from '../../config/vault.utils';
 
 export class initialSetup1605563456248 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const config = new ConfigService(await new VaultConfig().getServiceConfig());
+    const config = await new ConfigService().setConfigFromVault();
     const { schema } = config.get('db');
     await queryRunner.query(
       `CREATE TABLE "${schema}"."user_role" ("user_id" integer NOT NULL, "role_id" integer NOT NULL, CONSTRAINT "auth_user_role_role_id_user_id_pkey" PRIMARY KEY ("user_id", "role_id"))`
@@ -64,7 +63,7 @@ export class initialSetup1605563456248 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const config = new ConfigService(await new VaultConfig().getServiceConfig());
+    const config = await new ConfigService().setConfigFromVault();
     const { schema } = config.get('db');
     await queryRunner.query(
       `ALTER TABLE "${schema}"."role_permission" DROP CONSTRAINT "auth_role_permission_permission_id_foreign"`
