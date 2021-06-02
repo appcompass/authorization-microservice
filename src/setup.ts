@@ -61,7 +61,7 @@ const commands = {
             password: process.env.DB_PASSWORD || '',
             schema: 'auth',
             database: process.env.DB_NAME || 'appcompass',
-            syncronize: process.env.DB_SYNCHRONIZE || false,
+            synchronize: process.env.DB_SYNCHRONIZE || false,
             migrationsRun: true
           })
         }
