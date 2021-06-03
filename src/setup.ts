@@ -53,17 +53,19 @@ const commands = {
         },
         {
           key: 'secret/service/authorization/db',
-          value: JSON.stringify({
-            type: 'postgres',
-            host: process.env.DB_HOST || '127.0.0.1',
-            port: process.env.DB_PORT || 5432,
-            username: process.env.DB_USER || 'postgres',
-            password: process.env.DB_PASSWORD || '',
-            schema: 'auth',
-            database: process.env.DB_NAME || 'appcompass',
-            synchronize: process.env.DB_SYNCHRONIZE || false,
-            migrationsRun: true
-          })
+          value:
+            process.env.DB_CONFIG ||
+            JSON.stringify({
+              type: 'postgres',
+              host: process.env.DB_HOST || '127.0.0.1',
+              port: process.env.DB_PORT || 5432,
+              username: process.env.DB_USER || 'postgres',
+              password: process.env.DB_PASSWORD || '',
+              schema: 'auth',
+              database: process.env.DB_NAME || 'appcompass',
+              synchronize: process.env.DB_SYNCHRONIZE || false,
+              migrationsRun: true
+            })
         }
       ].map(({ key, value }) => client.write(key, { value }))
     ).then(() => console.log('key pair secrets and config set'));
