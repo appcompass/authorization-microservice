@@ -36,36 +36,36 @@ const commands = {
         { key: 'secret/service/shared/authorizationServiceHost', value: '0.0.0.0' },
         { key: 'secret/service/shared/authorizationServicePort', value: process.env.SERVICE_PORT || 3020 },
         {
-          key: 'secret/service/authorization/natsUrl',
-          value: process.env.SERVICE_NATS_URL || 'nats://localhost:4222'
+          key: 'secret/service/authorization/appConfig',
+          value: process.env.APP_CONFIG || {
+            rateLimit: {
+              max: 0
+            }
+          }
         },
         {
           key: 'secret/service/authorization/interServiceTransportConfig',
-          value:
-            process.env.INTERSERVICE_TRANSPORT_CONFIG ||
-            JSON.stringify({
-              transport: Transport.NATS,
-              options: {
-                url: 'nats://localhost:4222',
-                queue: 'authorization'
-              }
-            })
+          value: process.env.INTERSERVICE_TRANSPORT_CONFIG || {
+            transport: Transport.NATS,
+            options: {
+              url: 'nats://localhost:4222',
+              queue: 'authorization'
+            }
+          }
         },
         {
           key: 'secret/service/authorization/db',
-          value:
-            process.env.DB_CONFIG ||
-            JSON.stringify({
-              type: 'postgres',
-              host: process.env.DB_HOST || '127.0.0.1',
-              port: process.env.DB_PORT || 5432,
-              username: process.env.DB_USER || 'postgres',
-              password: process.env.DB_PASSWORD || '',
-              schema: 'auth',
-              database: process.env.DB_NAME || 'appcompass',
-              synchronize: process.env.DB_SYNCHRONIZE || false,
-              migrationsRun: true
-            })
+          value: process.env.DB_CONFIG || {
+            type: 'postgres',
+            host: process.env.DB_HOST || '127.0.0.1',
+            port: process.env.DB_PORT || 5432,
+            username: process.env.DB_USER || 'postgres',
+            password: process.env.DB_PASSWORD || '',
+            schema: 'auth',
+            database: process.env.DB_NAME || 'appcompass',
+            synchronize: process.env.DB_SYNCHRONIZE || false,
+            migrationsRun: true
+          }
         }
       ].map(({ key, value }) => client.write(key, { value }))
     ).then(() => console.log('key pair secrets and config set'));
