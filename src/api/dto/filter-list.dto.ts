@@ -15,7 +15,7 @@ export class FilterListQuery<T> {
     value
       .split(',')
       .map((row) => row.split(':'))
-      .reduce((o, [k, v]) => ((o[k.trim().toLocaleLowerCase()] = (v || 'asc').trim().toUpperCase()), o), {})
+      .reduce((o, [k, v]) => ((o[k.trim()] = (v || 'asc').trim().toUpperCase()), o), {})
   )
   readonly order: { [P in keyof T]?: 'ASC' | 'DESC' | 1 | -1 } = {};
 }
