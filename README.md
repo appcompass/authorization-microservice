@@ -1,5 +1,7 @@
 # AppCompass Authorization Service
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/6587270a750ceaa5cefa/maintainability)](https://codeclimate.com/github/appcompass/authorization-microservice/maintainability)
+
 ## Description
 
 AppCompass Authorization Service provides authorization resources to a platform that uses this service's interface contract for use.
