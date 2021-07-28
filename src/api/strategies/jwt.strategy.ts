@@ -6,7 +6,7 @@ import { PassportStrategy } from '@nestjs/passport';
 
 import { ConfigService } from '../../config/config.service';
 import { MessagingService } from '../../messaging/messaging.service';
-import { AuthenticatedUser, DecodedToken } from '../api.types';
+import { DecodedToken, UserRecord } from '../api.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,8 +18,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(token: DecodedToken) {
-    const tokenExpiration = moment.unix(token.exp);
-    const user: AuthenticatedUser = await this.messagingService.sendAsync('users.user.find-by', { id: token.sub });
-    return !moment(user.tokenExpiration).diff(tokenExpiration) && moment().isBefore(tokenExpiration) ? token : false;
+    const tokenIssuedAt = moment.unix(token.iat);
+    const user: UserRecord = await this.messagingService.sendAsync('users.user.find-by', { id: token.sub });
+    return moment(user.lastLogout).isBefore(tokenIssuedAt) ? token : false;
   }
 }

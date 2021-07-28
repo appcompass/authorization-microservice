@@ -1,3 +1,16 @@
+export interface UserRecord {
+  id: number;
+  email: string;
+  password: string;
+  active: boolean;
+  activationCode: string;
+  activatedAt: string;
+  lastLogin: string;
+  lastLogout: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type DecodedToken = {
   email: string;
   sub: number;
