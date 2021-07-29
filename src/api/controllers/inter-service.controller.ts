@@ -1,6 +1,6 @@
 import { getConnection } from 'typeorm';
 
-import { Controller, Logger } from '@nestjs/common';
+import { ConsoleLogger, Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import { MessagingService } from '../../messaging/messaging.service';
@@ -16,7 +16,7 @@ import { UserAuthorizationService } from '../services/user-authorization.service
 @Controller()
 export class InterServiceController {
   constructor(
-    private readonly logger: Logger,
+    private readonly logger: ConsoleLogger,
     private readonly messagingService: MessagingService,
     private readonly permissionsService: PermissionsService,
     private readonly rolesService: RolesService,

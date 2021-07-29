@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { getConnection } from 'typeorm';
 
-import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, ConsoleLogger, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 
@@ -18,7 +18,12 @@ import { UserAuthorizationService } from '../services/user-authorization.service
 @ApiUnauthorizedResponse(unauthorizedResponseOptions)
 @ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)
 export class UserAuthorizationController {
-  constructor(private readonly userAuthorizationService: UserAuthorizationService) {}
+  constructor(
+    private readonly logger: ConsoleLogger,
+    private readonly userAuthorizationService: UserAuthorizationService
+  ) {
+    this.logger.setContext(this.constructor.name);
+  }
   @UseGuards(AuthGuard())
   @Get(':id/roles')
   async listUserRoles(@Param('id') id: number) {

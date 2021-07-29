@@ -3,10 +3,10 @@ import { getConnection } from 'typeorm';
 
 import {
   Body,
+  ConsoleLogger,
   Controller,
   Delete,
   Get,
-  Logger,
   NotFoundException,
   Param,
   Post,
@@ -37,7 +37,7 @@ import { RolesService } from '../services/roles.service';
 @ApiUnauthorizedResponse(unauthorizedResponseOptions)
 @ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)
 export class RolesController {
-  constructor(private readonly logger: Logger, private readonly rolesService: RolesService) {
+  constructor(private readonly logger: ConsoleLogger, private readonly rolesService: RolesService) {
     this.logger.setContext(this.constructor.name);
   }
 

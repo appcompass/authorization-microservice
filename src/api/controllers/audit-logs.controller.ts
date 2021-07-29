@@ -1,6 +1,6 @@
 import { getConnection } from 'typeorm';
 
-import { Controller, Get, Logger, Query, UseGuards } from '@nestjs/common';
+import { ConsoleLogger, Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 
@@ -18,7 +18,7 @@ import { AuditLogsService } from '../services/audit-logs.service';
 @ApiUnauthorizedResponse(unauthorizedResponseOptions)
 @ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)
 export class AuditLogsController {
-  constructor(private readonly logger: Logger, private readonly auditLogsService: AuditLogsService) {
+  constructor(private readonly logger: ConsoleLogger, private readonly auditLogsService: AuditLogsService) {
     this.logger.setContext(this.constructor.name);
   }
   @UseGuards(AuthGuard(), PermissionsGuard)

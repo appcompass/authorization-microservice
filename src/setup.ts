@@ -48,7 +48,7 @@ const commands = {
           value: process.env.INTERSERVICE_TRANSPORT_CONFIG || {
             transport: Transport.NATS,
             options: {
-              url: 'nats://localhost:4222',
+              servers: ['nats://localhost:4222'],
               queue: 'authorization'
             }
           }
