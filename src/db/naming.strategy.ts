@@ -2,7 +2,7 @@ import { snakeCase } from 'lodash';
 import { DefaultNamingStrategy, NamingStrategyInterface, Table } from 'typeorm';
 
 export class DBNamingStrategy extends DefaultNamingStrategy implements NamingStrategyInterface {
-  columnName(propertyName: string, customName: string): string {
+  columnName(propertyName: string, customName?: string): string {
     return customName ? customName : snakeCase(propertyName);
   }
 

@@ -17,7 +17,7 @@ export class PermissionExistsValidator implements ValidatorConstraintInterface {
   constructor(protected readonly permissionsService: PermissionsService) {}
   async validate(name: string, args: ValidationArguments) {
     const permissionExistsCheck = args.constraints[0];
-    const permission = getManager().transaction(
+    const permission = await getManager().transaction(
       async (manager) => await this.permissionsService.findBy(manager, { name })
     );
     return permissionExistsCheck ? !!permission : !permission;

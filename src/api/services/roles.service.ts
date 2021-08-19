@@ -2,6 +2,7 @@ import { EntityManager, FindConditions, FindManyOptions, In } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
+import { FilterAllQuery } from '../api.types';
 import { RegisterRolesPayload } from '../dto/register-roles.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
@@ -28,6 +29,18 @@ export class RolesService {
   async delete(manager: EntityManager, id: number) {
     const { affected } = await manager.createQueryBuilder().delete().from(Role).where('id = :id', { id }).execute();
     return { affected };
+  }
+
+  async getPermissions(manager: EntityManager, id: number, options?: FilterAllQuery<Permission>) {
+    const { skip, take, order } = options;
+    const query = manager
+      .getRepository(Permission)
+      .createQueryBuilder('permission')
+      .leftJoin('permission.roles', 'role')
+      .where('role.id = :id', { id });
+
+    const [data, total] = await Promise.all([query.skip(skip).take(take).orderBy(order).getMany(), query.getCount()]);
+    return { data, total };
   }
 
   async syncPermissions(manager: EntityManager, id: number, ids: number[]) {

@@ -1,3 +1,5 @@
+import { OrderByCondition } from 'typeorm';
+
 export interface UserRecord {
   id: number;
   email: string;
@@ -41,4 +43,31 @@ export enum AuditDataChangeType {
   created = 'CREATED',
   updated = 'UPDATED',
   deleted = 'DELETED'
+}
+
+export type OrderQuery<T> = { [P in keyof T]?: 'ASC' | 'DESC' };
+
+export interface AuthenticatedServiceRequest extends Request {
+  user: DecodedToken;
+}
+
+export interface FilterAllQuery<T> {
+  order: OrderByCondition;
+  take: number;
+  skip: number;
+  where?: Partial<T>;
+}
+
+export interface PaginatedResponse<T> {
+  data: Array<T>;
+  pagination: {
+    skip: number;
+    take: number;
+    total: number;
+  };
+}
+
+export interface ResultsAndTotal<T> {
+  data: Array<T>;
+  total: number;
 }

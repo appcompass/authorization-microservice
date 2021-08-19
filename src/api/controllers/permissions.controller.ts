@@ -21,10 +21,12 @@ import { ApiBearerAuth, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse 
 
 import { setUser } from '../../db/query.utils';
 import { unauthorizedResponseOptions, unprocessableEntityResponseOptions } from '../api.contract-shapes';
+import { Permissions } from '../decorators/permissions.decorator';
 import { FilterListQuery } from '../dto/filter-list.dto';
 import { CreatePermissionPayload } from '../dto/permission-create.dto';
 import { UpdatePermissionPayload } from '../dto/permission-update.dto';
 import { Permission } from '../entities/permission.entity';
+import { PermissionsGuard } from '../guards/permissions.guard';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { PermissionsService } from '../services/permissions.service';
 
@@ -36,8 +38,9 @@ export class PermissionsController {
   constructor(private readonly logger: ConsoleLogger, private readonly permissionsService: PermissionsService) {
     this.logger.setContext(this.constructor.name);
   }
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Post()
+  @Permissions('authorization.permission.create')
   async create(@Body() payload: CreatePermissionPayload, @Req() req: Request) {
     return await getConnection().transaction(async (manager) => {
       await setUser(req.user, manager);
@@ -48,8 +51,9 @@ export class PermissionsController {
     });
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Get()
+  @Permissions('authorization.permission.list')
   async list(@Query() query: FilterListQuery<Permission>) {
     const { skip, take, order } = query;
     const options = {
@@ -67,8 +71,9 @@ export class PermissionsController {
     });
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Get(':id')
+  @Permissions('authorization.permission.read')
   async findById(@Param('id') id: number) {
     return await getConnection().transaction(async (manager) => {
       try {
@@ -79,8 +84,9 @@ export class PermissionsController {
     });
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Put(':id')
+  @Permissions('authorization.permission.update')
   async updateById(
     @Param('id') id: number,
     @Body(new NoEmptyPayloadPipe()) payload: UpdatePermissionPayload,
@@ -96,8 +102,9 @@ export class PermissionsController {
     });
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Delete(':id')
+  @Permissions('authorization.permission.delete')
   async deleteById(@Param('id') id: number, @Req() req: Request) {
     return await getConnection().transaction(async (manager) => {
       await setUser(req.user, manager);

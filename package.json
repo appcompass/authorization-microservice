@@ -26,10 +26,11 @@
     "setup:db": "ts-node src/setup.ts schema:create",
     "image:build": "docker build . --file Dockerfile --tag appcompass/authorization-service:latest",
     "image:push": "docker push appcompass/authorization-service:latest",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm --config src/db/cli-config.ts",
     "deps:check": "depcruise --validate .dependency-cruiser.json src",
-    "test": "jest",
+    "test:unit": "jest --config ./test/jest-unit.json",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --config ./test/jest-unit.json --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },

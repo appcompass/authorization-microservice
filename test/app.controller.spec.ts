@@ -1,3 +1,4 @@
+import { ConsoleLogger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AppController } from '../src/app.controller';
@@ -11,7 +12,7 @@ const getAppController = async () => {
   };
   const app: TestingModule = await Test.createTestingModule({
     controllers: [AppController],
-    providers: [AppServiceProvider]
+    providers: [AppServiceProvider, ConsoleLogger]
   }).compile();
 
   return app.get<AppController>(AppController);
