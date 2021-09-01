@@ -18,7 +18,7 @@ export class RolesExistValidator implements ValidatorConstraintInterface {
   async validate(ids: number[]) {
     if (ids.length === 0) return true;
     const roles = await getManager().transaction(
-      async (manager) => await this.rolesService.findAll(manager, { where: { id: In(ids) } })
+      async (manager) => await this.rolesService.findAllWhere(manager, { id: In(ids) })
     );
     return ids.length === roles.length;
   }

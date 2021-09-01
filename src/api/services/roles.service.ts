@@ -1,16 +1,30 @@
-import { EntityManager, FindConditions, FindManyOptions, In } from 'typeorm';
+import { ConfigService } from 'src/config/config.service';
+import { EntityManager, FindConditions, In, ObjectLiteral } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import { FilterAllQuery } from '../api.types';
+import { FilterAllQuery, ResultsAndTotal } from '../api.types';
 import { RegisterRolesPayload } from '../dto/register-roles.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
 
 @Injectable()
 export class RolesService {
-  async findAll(manager: EntityManager, options?: FindManyOptions<Role>): Promise<Role[]> {
-    return await manager.getRepository(Role).find(options);
+  constructor(private readonly configService: ConfigService) {}
+
+  async findAll(manager: EntityManager, options: FilterAllQuery<Role>): Promise<ResultsAndTotal<Role>> {
+    const { skip, take, order, filter } = options;
+    const params = { filter: `%${filter}%` };
+    const baseQuery = manager.createQueryBuilder().select('r').from(Role, 'r');
+    const query = (
+      filter ? baseQuery.where('r.name LIKE :filter or r.label LIKE :filter or r.description LIKE :filter') : baseQuery
+    ).setParameters(params);
+    const [data, total] = await Promise.all([query.skip(skip).take(take).orderBy(order).getMany(), query.getCount()]);
+    return { data, total };
+  }
+
+  async findAllWhere(manager: EntityManager, where: ObjectLiteral): Promise<Role[]> {
+    return await manager.createQueryBuilder().select('r').from(Role, 'r').where(where).getMany();
   }
 
   async findBy(manager: EntityManager, filters: FindConditions<Role>): Promise<Role | undefined> {
@@ -32,12 +46,18 @@ export class RolesService {
   }
 
   async getPermissions(manager: EntityManager, id: number, options?: FilterAllQuery<Permission>) {
-    const { skip, take, order } = options;
+    const { schema } = this.configService.get('db');
+    const { skip, take, order, filter } = options;
+    const params = { id, filter: `%${filter}%` };
     const query = manager
-      .getRepository(Permission)
-      .createQueryBuilder('permission')
-      .leftJoin('permission.roles', 'role')
-      .where('role.id = :id', { id });
+      .createQueryBuilder()
+      .select('p')
+      .from(Permission, 'p')
+      .where(
+        `exists (select 1 from ${schema}.role_permission rp where rp.role_id = :id and rp.permission_id = p.id)` +
+          (filter ? 'and (p.name LIKE :filter or p.label LIKE :filter or p.description LIKE :filter)' : '')
+      )
+      .setParameters(params);
 
     const [data, total] = await Promise.all([query.skip(skip).take(take).orderBy(order).getMany(), query.getCount()]);
     return { data, total };

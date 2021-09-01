@@ -5,10 +5,12 @@ import {
   Body,
   ConsoleLogger,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -21,13 +23,14 @@ import { ApiBearerAuth, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse 
 
 import { setUser } from '../../db/query.utils';
 import { unauthorizedResponseOptions, unprocessableEntityResponseOptions } from '../api.contract-shapes';
+import { OrderQuery, PaginatedResponse } from '../api.types';
 import { Permissions } from '../decorators/permissions.decorator';
-import { FilterListQuery } from '../dto/filter-list.dto';
 import { CreatePermissionPayload } from '../dto/permission-create.dto';
 import { UpdatePermissionPayload } from '../dto/permission-update.dto';
 import { Permission } from '../entities/permission.entity';
 import { PermissionsGuard } from '../guards/permissions.guard';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
+import { QueryOrderPipe } from '../pipes/query-order.pipe';
 import { PermissionsService } from '../services/permissions.service';
 
 @Controller('permissions')
@@ -54,17 +57,23 @@ export class PermissionsController {
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Get()
   @Permissions('authorization.permission.list')
-  async list(@Query() query: FilterListQuery<Permission>) {
-    const { skip, take, order } = query;
-    const options = {
-      skip: +skip,
-      take: +take,
-      order
-    };
-
+  async list(
+    @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
+    @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
+    @Query('order', new DefaultValuePipe(''), QueryOrderPipe) order: OrderQuery<Permission>,
+    @Query('filter', new DefaultValuePipe('')) filter?: string
+  ): Promise<PaginatedResponse<Permission>> {
     return await getConnection().transaction(async (manager) => {
       try {
-        return this.permissionsService.findAll(manager, options);
+        const { data, total } = await this.permissionsService.findAll(manager, { skip, take, order, filter });
+        return {
+          data,
+          pagination: {
+            total,
+            skip,
+            take
+          }
+        };
       } catch (error) {
         throw new UnprocessableEntityException(error.message);
       }

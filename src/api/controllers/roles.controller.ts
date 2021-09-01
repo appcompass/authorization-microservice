@@ -66,11 +66,20 @@ export class RolesController {
   async list(
     @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
     @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
-    @Query('order', new DefaultValuePipe(''), QueryOrderPipe) order: OrderQuery<Role>
-  ) {
+    @Query('order', new DefaultValuePipe(''), QueryOrderPipe) order: OrderQuery<Role>,
+    @Query('filter', new DefaultValuePipe('')) filter?: string
+  ): Promise<PaginatedResponse<Role>> {
     return await getConnection().transaction(async (manager) => {
       try {
-        return this.rolesService.findAll(manager, { skip, take, order });
+        const { data, total } = await this.rolesService.findAll(manager, { skip, take, order, filter });
+        return {
+          data,
+          pagination: {
+            total,
+            skip,
+            take
+          }
+        };
       } catch (error) {
         throw new UnprocessableEntityException(error.message);
       }
@@ -148,11 +157,12 @@ export class RolesController {
     @Param('id') id: number,
     @Query('skip', new DefaultValuePipe(0), ParseIntPipe) skip: number,
     @Query('take', new DefaultValuePipe(20), ParseIntPipe) take: number,
-    @Query('order', new DefaultValuePipe(''), QueryOrderPipe) order: OrderQuery<Permission>
+    @Query('order', new DefaultValuePipe(''), QueryOrderPipe) order: OrderQuery<Permission>,
+    @Query('filter', new DefaultValuePipe('')) filter?: string
   ): Promise<PaginatedResponse<Permission>> {
     return await getConnection().transaction(async (manager) => {
       try {
-        const { data, total } = await this.rolesService.getPermissions(manager, id, { skip, take, order });
+        const { data, total } = await this.rolesService.getPermissions(manager, id, { skip, take, order, filter });
         return {
           data,
           pagination: {

@@ -18,7 +18,7 @@ export class PermissionsExistValidator implements ValidatorConstraintInterface {
   async validate(ids: number[]) {
     if (ids.length === 0) return true;
     const permissions = await getManager().transaction(
-      async (manager) => await this.permissionsService.findAll(manager, { where: { id: In(ids) } })
+      async (manager) => await this.permissionsService.findAllWhere(manager, { id: In(ids) })
     );
     return ids.length === permissions.length;
   }

@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { OrderByCondition } from 'typeorm';
 
 export interface UserRecord {
@@ -55,6 +56,7 @@ export interface FilterAllQuery<T> {
   order: OrderByCondition;
   take: number;
   skip: number;
+  filter?: string;
   where?: Partial<T>;
 }
 
