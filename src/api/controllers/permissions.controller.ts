@@ -33,7 +33,7 @@ import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { QueryOrderPipe } from '../pipes/query-order.pipe';
 import { PermissionsService } from '../services/permissions.service';
 
-@Controller('permissions')
+@Controller('v1/permissions')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse(unauthorizedResponseOptions)
 @ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)

@@ -38,7 +38,7 @@ import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { QueryOrderPipe } from '../pipes/query-order.pipe';
 import { RolesService } from '../services/roles.service';
 
-@Controller('roles')
+@Controller('v1/roles')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse(unauthorizedResponseOptions)
 @ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)

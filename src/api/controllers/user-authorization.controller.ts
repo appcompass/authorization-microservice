@@ -15,7 +15,7 @@ import { PermissionsGuard } from '../guards/permissions.guard';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
 import { UserAuthorizationService } from '../services/user-authorization.service';
 
-@Controller('user')
+@Controller('v1/user')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse(unauthorizedResponseOptions)
 @ApiUnprocessableEntityResponse(unprocessableEntityResponseOptions)
