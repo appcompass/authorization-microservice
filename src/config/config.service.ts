@@ -1,6 +1,7 @@
 import * as Joi from 'joi';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ClientOptions } from '@nestjs/microservices';
 
 import { VaultConfig } from './vault.utils';
@@ -17,12 +18,13 @@ export interface AppConfig {
     skipFailedRequests?: boolean;
     skipSuccessfulRequests?: boolean;
   };
+  corsOptions: CorsOptions;
 }
 export interface ValidConfig {
   NODE_ENV: string;
+  GIT_HASH: string;
+  GIT_TAG: string;
   npm_package_name: string;
-  npm_package_gitHead: string;
-  npm_package_version: string;
   serviceHost: string;
   servicePort: number;
   publicKey: string;
@@ -36,9 +38,9 @@ export class ConfigService {
   public vault: VaultConfig;
   private schema: Joi.ObjectSchema = Joi.object({
     NODE_ENV: Joi.string().default('local'),
+    GIT_HASH: Joi.string().default('latest'),
+    GIT_TAG: Joi.string().default('latest'),
     npm_package_name: Joi.string(),
-    npm_package_gitHead: Joi.string(),
-    npm_package_version: Joi.string(),
     serviceHost: Joi.string(),
     servicePort: Joi.number(),
     publicKey: Joi.string(),
