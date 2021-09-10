@@ -26,6 +26,10 @@ export class PermissionsService {
     return await manager.getRepository(Permission).findOne(filters);
   }
 
+  async findOne(manager: EntityManager, filters: FindConditions<Permission>): Promise<Permission | undefined> {
+    return await manager.getRepository(Permission).findOneOrFail(filters);
+  }
+
   async create(manager: EntityManager, data: Partial<Permission>) {
     return await manager.insert(Permission, data);
   }
