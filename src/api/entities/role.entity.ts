@@ -31,6 +31,9 @@ export class Role {
   @Column({ type: 'text', nullable: false })
   description: string;
 
+  @Column({ type: 'boolean', default: false, nullable: false })
+  public system: boolean;
+
   @ManyToOne(() => Permission, (permission) => permission.assignableRoles, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'assignable_by_id' })
   assignableBy: Permission;

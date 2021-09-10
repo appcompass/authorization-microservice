@@ -1,5 +1,5 @@
 import { ConfigService } from 'src/config/config.service';
-import { EntityManager, FindConditions, In, ObjectLiteral } from 'typeorm';
+import { EntityManager, FindConditions, ObjectLiteral } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
@@ -35,13 +35,23 @@ export class RolesService {
     return await manager.insert(Role, data);
   }
 
-  async update(manager: EntityManager, id: number, data: Partial<Role>) {
-    const { affected } = await manager.createQueryBuilder().update(Role).set(data).where('id = :id', { id }).execute();
+  async update(manager: EntityManager, id: number, data: Partial<Role>, system: boolean = false) {
+    const { affected } = await manager
+      .createQueryBuilder()
+      .update(Role)
+      .set(data)
+      .where('id = :id and system = :system', { id, system })
+      .execute();
     return { affected };
   }
 
-  async delete(manager: EntityManager, id: number) {
-    const { affected } = await manager.createQueryBuilder().delete().from(Role).where('id = :id', { id }).execute();
+  async delete(manager: EntityManager, id: number, system: boolean = false) {
+    const { affected } = await manager
+      .createQueryBuilder()
+      .delete()
+      .from(Role)
+      .where('id = :id and system = :system', { id, system })
+      .execute();
     return { affected };
   }
 
@@ -91,29 +101,27 @@ export class RolesService {
     await this.syncPermissions(manager, roleId, permissionIds);
   }
 
-  async findOrCreatePermissionIds(manager: EntityManager, payload: Partial<Role>[]) {
-    const where = { name: In(payload.map(({ name }) => name)) };
-    const foundPermissions = await manager.getRepository(Permission).find({ where });
-    const foundNames = foundPermissions.map((permission) => permission.name);
-    const foundIds = foundPermissions.map((permission) => permission.id);
-    const permissionsToCreate = payload.filter(({ name }) => !foundNames.includes(name));
-    const { generatedMaps } = await manager.insert(Permission, permissionsToCreate);
-    const createdIds: number[] = generatedMaps.map(({ id }) => id);
-    return [...foundIds, ...createdIds];
+  async findOrCreatePermissionIds(manager: EntityManager, payload: Partial<Permission>[]) {
+    const { identifiers } = await manager
+      .createQueryBuilder()
+      .insert()
+      .into(Permission)
+      .values(payload)
+      .orUpdate(['label', 'description', 'system'], ['name'])
+      .execute();
+    return identifiers.map((row) => row.id);
   }
 
   async findOrCreateRoleId(manager: EntityManager, { name, label, description }: Partial<Role>) {
-    const role = await this.findBy(manager, { name });
-    if (role) return role.id;
+    const { identifiers } = await manager
+      .createQueryBuilder()
+      .insert()
+      .into(Role)
+      .values({ name, label, description })
+      .orUpdate(['label', 'description', 'system'], ['name'])
+      .execute();
+    const [row] = identifiers;
 
-    const {
-      generatedMaps: [{ id }]
-    } = await manager.insert(Role, {
-      name,
-      label,
-      description
-    });
-
-    return id;
+    return row.id;
   }
 }
