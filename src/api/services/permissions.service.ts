@@ -30,22 +30,22 @@ export class PermissionsService {
     return await manager.insert(Permission, data);
   }
 
-  async update(manager: EntityManager, id: number, data: Partial<Permission>) {
+  async update(manager: EntityManager, id: number, data: Partial<Permission>, system: boolean = false) {
     const { affected } = await manager
       .createQueryBuilder()
       .update(Permission)
       .set(data)
-      .where('id = :id', { id })
+      .where('id = :id and system = :system', { id, system })
       .execute();
     return { affected };
   }
 
-  async delete(manager: EntityManager, id: number) {
+  async delete(manager: EntityManager, id: number, system: boolean = false) {
     const { affected } = await manager
       .createQueryBuilder()
       .delete()
       .from(Permission)
-      .where('id = :id', { id })
+      .where('id = :id and system = :system', { id, system })
       .execute();
     return { affected };
   }

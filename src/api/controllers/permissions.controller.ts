@@ -30,6 +30,7 @@ import { UpdatePermissionPayload } from '../dto/permission-update.dto';
 import { Permission } from '../entities/permission.entity';
 import { PermissionsGuard } from '../guards/permissions.guard';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
+import { NotSystemPermissionPipe } from '../pipes/not-system-permission.pipe';
 import { QueryOrderPipe } from '../pipes/query-order.pipe';
 import { PermissionsService } from '../services/permissions.service';
 
@@ -97,7 +98,7 @@ export class PermissionsController {
   @Put(':id')
   @Permissions('authorization.permission.update')
   async updateById(
-    @Param('id') id: number,
+    @Param('id', NotSystemPermissionPipe) id: number,
     @Body(new NoEmptyPayloadPipe()) payload: UpdatePermissionPayload,
     @Req() req: Request
   ) {
@@ -114,7 +115,7 @@ export class PermissionsController {
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Delete(':id')
   @Permissions('authorization.permission.delete')
-  async deleteById(@Param('id') id: number, @Req() req: Request) {
+  async deleteById(@Param('id', NotSystemPermissionPipe) id: number, @Req() req: Request) {
     return await getConnection().transaction(async (manager) => {
       await setUser(req.user, manager);
       try {
