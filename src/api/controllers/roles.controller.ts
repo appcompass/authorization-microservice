@@ -35,6 +35,7 @@ import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
 import { PermissionsGuard } from '../guards/permissions.guard';
 import { NoEmptyPayloadPipe } from '../pipes/no-empty-payload.pipe';
+import { NotSystemRolePipe } from '../pipes/not-system-role.pipe';
 import { QueryOrderPipe } from '../pipes/query-order.pipe';
 import { RolesService } from '../services/roles.service';
 
@@ -120,7 +121,7 @@ export class RolesController {
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Delete(':id')
   @Permissions('authorization.role.delete')
-  async deleteById(@Param('id') id: number, @Req() req: Request): Promise<RowsAffectedResponse> {
+  async deleteById(@Param('id', NotSystemRolePipe) id: number, @Req() req: Request): Promise<RowsAffectedResponse> {
     return await getConnection().transaction(async (manager) => {
       await setUser(req.user, manager);
       try {
@@ -135,7 +136,7 @@ export class RolesController {
   @Put(':id/permissions/sync')
   @Permissions('authorization.role.update', 'authorization.permission.read')
   async syncPermissions(
-    @Param('id') id: number,
+    @Param('id', NotSystemRolePipe) id: number,
     @Body(new NoEmptyPayloadPipe()) payload: PermissionIdsPayload,
     @Req() req: Request
   ): Promise<SyncResponse> {
