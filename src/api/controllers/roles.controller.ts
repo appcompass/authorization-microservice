@@ -93,7 +93,7 @@ export class RolesController {
   async findById(@Param('id') id: number) {
     return await getConnection().transaction(async (manager) => {
       try {
-        return await this.rolesService.findBy(manager, { id });
+        return await this.rolesService.findOne(manager, { id });
       } catch (error) {
         throw new NotFoundException(error.message);
       }

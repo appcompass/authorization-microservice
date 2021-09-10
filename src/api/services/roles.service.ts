@@ -31,6 +31,10 @@ export class RolesService {
     return await manager.getRepository(Role).findOne(filters);
   }
 
+  async findOne(manager: EntityManager, filters: FindConditions<Role>): Promise<Role | undefined> {
+    return await manager.getRepository(Role).findOneOrFail(filters);
+  }
+
   async create(manager: EntityManager, data: Partial<Role>) {
     return await manager.insert(Role, data);
   }
@@ -112,12 +116,12 @@ export class RolesService {
     return identifiers.map((row) => row.id);
   }
 
-  async findOrCreateRoleId(manager: EntityManager, { name, label, description }: Partial<Role>) {
+  async findOrCreateRoleId(manager: EntityManager, payload: Partial<Role>) {
     const { identifiers } = await manager
       .createQueryBuilder()
       .insert()
       .into(Role)
-      .values({ name, label, description })
+      .values(payload)
       .orUpdate(['label', 'description', 'system'], ['name'])
       .execute();
     const [row] = identifiers;
