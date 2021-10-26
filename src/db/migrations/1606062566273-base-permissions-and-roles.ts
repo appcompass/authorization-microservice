@@ -2,6 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 import { Permission } from '../../api/entities/permission.entity';
 import { Role } from '../../api/entities/role.entity';
+import { ConfigService } from '../../config/config.service';
 
 export const systemPermissions = [
   {
@@ -95,22 +96,20 @@ export const systemPermissions = [
     system: true
   }
 ];
-
 export class basePermissionsAndRoles1606062566273 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const config = await new ConfigService().setConfigFromVault();
+    const { schema } = config.get('db');
+
     const permissionRepo = queryRunner.manager.getRepository(Permission);
-    const roleRepo = queryRunner.manager.getRepository(Role);
-    const permissions = systemPermissions.map((data) => permissionRepo.create(data));
 
-    const authorizationAdminRole = roleRepo.create({
-      name: 'authorization.admin',
-      label: 'Authorization Admin',
-      description: 'Platform Authorization Administrator'
-    });
+    const [{ id }] = await queryRunner.query(
+      `insert into "${schema}"."roles" ("name", "label", "description") VALUES ('authorization.admin', 'Authorization Admin', 'Platform Authorization Administrator') RETURNING "id"`
+    );
 
-    authorizationAdminRole.permissions = permissions;
+    const permissions = systemPermissions.map((data) => permissionRepo.create({ ...data, roles: [{ id }] }));
 
-    await roleRepo.save(authorizationAdminRole);
+    await permissionRepo.save(permissions);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

@@ -2,6 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 import { Permission } from '../../api/entities/permission.entity';
 import { Role } from '../../api/entities/role.entity';
+import { ConfigService } from '../../config/config.service';
 
 export const systemPermissions = [
   {
@@ -41,18 +42,17 @@ export const systemPermissions = [
     system: true
   }
 ];
-
 export class addMissingPermissions1629332035675 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const roleRepo = queryRunner.manager.getRepository(Role);
+    const config = await new ConfigService().setConfigFromVault();
+    const { schema } = config.get('db');
+
     const { generatedMaps } = await queryRunner.manager.insert(Permission, systemPermissions);
 
+    const [{ id }] = await queryRunner.query(`select id from "${schema}"."roles" where name = 'authorization.admin'`);
     const permissionIds = generatedMaps.map((row) => row.id);
-    const authorizationAdminRole = await roleRepo.findOne({
-      name: 'authorization.admin'
-    });
 
-    const query = queryRunner.manager.createQueryBuilder().relation(Role, 'permissions').of(authorizationAdminRole);
+    const query = queryRunner.manager.createQueryBuilder().relation(Role, 'permissions').of(id);
 
     await query.add(permissionIds);
   }
