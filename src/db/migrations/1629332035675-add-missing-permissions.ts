@@ -44,8 +44,8 @@ export const systemPermissions = [
 ];
 export class addMissingPermissions1629332035675 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const config = await new ConfigService().setConfigFromVault();
-    const { schema } = config.get('db');
+    const config = new ConfigService();
+    const { schema } = config.get('DB_CONFIG');
 
     const { generatedMaps } = await queryRunner.manager.insert(Permission, systemPermissions);
 

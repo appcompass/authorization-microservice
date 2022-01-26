@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 
 import { AppService } from './app.service';
+import { StatusResponse } from './app.status-response.dto';
 
 @Controller()
 export class AppController {
@@ -9,7 +10,7 @@ export class AppController {
 
   @Get('status')
   @MessagePattern('authorization.status')
-  getServiceStatus() {
+  getServiceStatus(): StatusResponse {
     return this.appService.getStatus();
   }
 }

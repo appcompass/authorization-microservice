@@ -4,8 +4,6 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ClientOptions } from '@nestjs/microservices';
 
-import { VaultConfig } from './vault.utils';
-
 export type EnvConfig = Record<string, string>;
 
 export interface AppConfig {
@@ -21,39 +19,62 @@ export interface AppConfig {
   corsOptions: CorsOptions;
 }
 export interface ValidConfig {
+  SERVICE_NAME: string;
+  SERVICE_PORT: number;
   NODE_ENV: string;
   GIT_HASH: string;
   GIT_TAG: string;
-  npm_package_name: string;
-  serviceHost: string;
-  servicePort: number;
-  publicKey: string;
-  appConfig: AppConfig;
-  interServiceTransportConfig: ClientOptions;
-  db: PostgresConnectionOptions;
+  ENV: string;
+  PUBLIC_KEY: string;
+  APP_CONFIG: AppConfig;
+  INTERSERVICE_TRANSPORT_CONFIG: ClientOptions;
+  DB_CONFIG: PostgresConnectionOptions;
 }
+
+const extendedJoi = Joi.extend(
+  (joi) => ({
+    type: 'object',
+    base: joi.object(),
+    coerce(value) {
+      try {
+        return { value: JSON.parse(value) };
+      } catch (error) {
+        return { error };
+      }
+    }
+  }),
+  (joi) => ({
+    type: 'string',
+    base: joi.string(),
+    coerce(value) {
+      try {
+        return {
+          value: value.replace(/\\n/g, '\n')
+        };
+      } catch (error) {
+        return { error };
+      }
+    }
+  })
+);
 
 export class ConfigService {
   private config: ValidConfig;
-  public vault: VaultConfig;
   private schema: Joi.ObjectSchema = Joi.object({
+    SERVICE_NAME: Joi.string(),
+    SERVICE_PORT: Joi.number().default(3000),
+    ENV: Joi.string().default('local'),
     NODE_ENV: Joi.string().default('local'),
     GIT_HASH: Joi.string().default('latest'),
     GIT_TAG: Joi.string().default('latest'),
-    npm_package_name: Joi.string(),
-    serviceHost: Joi.string(),
-    servicePort: Joi.number(),
-    publicKey: Joi.string(),
-    appConfig: Joi.object(),
-    interServiceTransportConfig: Joi.object(),
-    db: Joi.object()
-  }).options({ stripUnknown: true });
+    PUBLIC_KEY: extendedJoi.string().required(),
+    APP_CONFIG: extendedJoi.object().required(),
+    INTERSERVICE_TRANSPORT_CONFIG: extendedJoi.object().required(),
+    DB_CONFIG: extendedJoi.object().required()
+  }).options({ stripUnknown: true, convert: true });
 
-  async setConfigFromVault() {
-    this.vault = new VaultConfig(process.env.npm_package_name);
-    const config: EnvConfig = await this.vault.getServiceConfig();
-    this.config = this.validate({ ...process.env, ...config });
-
+  constructor(env: EnvConfig = process.env) {
+    this.config = this.validate(env);
     return this;
   }
 

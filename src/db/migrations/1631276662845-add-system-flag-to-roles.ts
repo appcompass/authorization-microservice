@@ -6,8 +6,8 @@ export class addSystemFlagToRoles1631276662845 implements MigrationInterface {
   name = 'addSystemFlagToRoles1631276662845';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const config = await new ConfigService().setConfigFromVault();
-    const { schema } = config.get('db');
+    const config = new ConfigService();
+    const { schema } = config.get('DB_CONFIG');
     await queryRunner.query(`
       ALTER TABLE "${schema}"."user_role" DROP CONSTRAINT "auth_user_role_role_id_foreign"
     `);
@@ -71,8 +71,8 @@ export class addSystemFlagToRoles1631276662845 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const config = await new ConfigService().setConfigFromVault();
-    const { schema } = config.get('db');
+    const config = new ConfigService();
+    const { schema } = config.get('DB_CONFIG');
     await queryRunner.query(`
       ALTER TABLE "${schema}"."role_permission" DROP CONSTRAINT "role_permission_permission_id_foreign"
     `);

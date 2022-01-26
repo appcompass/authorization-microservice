@@ -2,7 +2,16 @@ import { ConsoleLogger, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { DBConfigService, entities } from '../db/db-config.service';
+import { AuditPermission } from '../api/entities/audit-permission.entity';
+import { AuditRolePermission } from '../api/entities/audit-role-permission.entity';
+import { AuditRole } from '../api/entities/audit-role.entity';
+import { AuditUserPermission } from '../api/entities/audit-user-permission.entity';
+import { AuditUserRole } from '../api/entities/audit-user-role.entity';
+import { Permission } from '../api/entities/permission.entity';
+import { Role } from '../api/entities/role.entity';
+import { UserPermission } from '../api/entities/user-permission.entity';
+import { UserRole } from '../api/entities/user-role.entity';
+import { DBConfigService } from '../db/db-config.service';
 import { MessagingModule } from '../messaging/messaging.module';
 import { AuditLogsController } from './controllers/audit-logs.controller';
 import { InterServiceController } from './controllers/inter-service.controller';
@@ -22,7 +31,21 @@ import { RolesExistValidator } from './validators/roles-exist.validator';
 import { SameAsValidator } from './validators/same-as.validator';
 
 @Module({
-  imports: [TypeOrmModule.forFeature(entities), MessagingModule, PassportModule.register({ defaultStrategy: 'jwt' })],
+  imports: [
+    TypeOrmModule.forFeature([
+      AuditPermission,
+      AuditRolePermission,
+      AuditRole,
+      AuditUserPermission,
+      AuditUserRole,
+      Permission,
+      Role,
+      UserPermission,
+      UserRole
+    ]),
+    MessagingModule,
+    PassportModule.register({ defaultStrategy: 'jwt' })
+  ],
   controllers: [
     PermissionsController,
     RolesController,

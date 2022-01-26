@@ -98,8 +98,8 @@ export const systemPermissions = [
 ];
 export class basePermissionsAndRoles1606062566273 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const config = await new ConfigService().setConfigFromVault();
-    const { schema } = config.get('db');
+    const config = new ConfigService();
+    const { schema } = config.get('DB_CONFIG');
 
     const permissionRepo = queryRunner.manager.getRepository(Permission);
 

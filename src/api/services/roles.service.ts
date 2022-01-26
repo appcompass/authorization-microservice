@@ -60,7 +60,7 @@ export class RolesService {
   }
 
   async getPermissions(manager: EntityManager, id: number, options?: FilterAllQuery<Permission>) {
-    const { schema } = this.configService.get('db');
+    const { schema } = this.configService.get('DB_CONFIG');
     const { skip, take, order, filter } = options;
     const params = { id, filter: `%${filter}%` };
     const query = manager
