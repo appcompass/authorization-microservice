@@ -1,6 +1,7 @@
 FROM node:16 as builder
 WORKDIR /app
 COPY ./package*.json ./
+RUN npm install npm @nestjs/cli -g
 RUN npm install --production
 RUN npm rebuild bcrypt --build-from-source
 COPY . .
