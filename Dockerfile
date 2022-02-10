@@ -1,12 +1,12 @@
 FROM node:16 as builder
 WORKDIR /app
 COPY ./package*.json ./
-RUN npm install
+RUN npm install --production
 RUN npm rebuild bcrypt --build-from-source
 COPY . .
 RUN npm run build
 
-FROM node:16
+FROM node:16-stretch-slim
 WORKDIR /app
 COPY --from=builder /app .
 
